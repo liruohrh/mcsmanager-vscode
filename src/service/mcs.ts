@@ -12,7 +12,7 @@ import {
 } from "../utils/constant";
 import { MCSLoginUser } from "../types";
 
-export class MCSAPI {
+export class McsService {
     public async isLogin(): Promise<boolean> {
         const resp = await getLoginUser();
         return resp.status !== 403;

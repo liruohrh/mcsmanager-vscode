@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-export class MCSFileTreeView
+export class MCSFileTreeDataProvider
     implements vscode.TreeDataProvider<vscode.TreeItem>
 {
     private _onDidChangeTreeData = new vscode.EventEmitter<void>();

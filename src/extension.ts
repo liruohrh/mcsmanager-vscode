@@ -85,8 +85,8 @@ async function afterLogin() {
 
     // 刷新文件列表
     GlobalVar.context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_REFRESH_FILES, () => {
-            refreshFilesCommand(fileTreeDataProvider);
+        vscode.commands.registerCommand(COMMAND_REFRESH_FILES, (element) => {
+            refreshFilesCommand(fileTreeDataProvider, element);
         })
     );
 

@@ -46,10 +46,6 @@
                 "category": "MCSManager"
             },
             {
-                "command": "mcsManager.login",
-                "title": "登录MCSManager"
-            },
-            {
                 "command": "mcsManager.refreshFiles",
                 "title": "Refresh Files",
                 "category": "MCSManager",
@@ -78,6 +74,13 @@
                     "command": "mcsManager.refreshInstances",
                     "when": "view == mcsInstanceExplorer",
                     "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "mcsManager.refreshFiles",
+                    "when": "view == mcsFileExplorer && viewItem == directory",
+                    "group": "inline"
                 }
             ]
         },

@@ -22,6 +22,10 @@ export class MCSInstanceTreeDataProvider
             element.nickname,
             vscode.TreeItemCollapsibleState.None
         );
+        if (GlobalVar.currentInstance?.instanceUuid === element.instanceUuid) {
+            treeItem.description = "✅";
+        }
+        treeItem.tooltip = JSON.stringify(element);
         treeItem.iconPath = new vscode.ThemeIcon(
             element.status === 0 ? "stop" : "play-circle"
         );
@@ -31,12 +35,6 @@ export class MCSInstanceTreeDataProvider
             title: "Select Instance",
             arguments: [element],
         };
-
-        // 如果是当前选中的实例，添加选中标识
-        if (GlobalVar.currentInstance?.instanceUuid === element.instanceUuid) {
-            treeItem.description = "✓";
-        }
-
         return treeItem;
     }
 

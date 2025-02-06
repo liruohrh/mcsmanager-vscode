@@ -1,8 +1,12 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "../utils/global";
-import { STATE_LOGIN_USER } from "../utils/constant";
 import { MCSFileItem, MCSLoginUser, MCSInstance } from "../types";
-import { isDirectory, isFile } from "../utils/mcs";
+import {
+    isDirectory,
+    formatFileSize,
+    formatDateTime,
+    buildMCSUrl,
+} from "../utils/mcs";
 import { Config } from "../utils/config";
 import { COMMAND_OPEN_FILE } from "../commands/files";
 
@@ -16,25 +20,39 @@ export class MCSFileTreeDataProvider
         MCSFileItem | undefined | null | void
     > = this.onDidChangeTreeDataEventEmitter.event;
 
-    refresh(): void {
-        //更新root -> 更新所有可展开的节点
-        this.onDidChangeTreeDataEventEmitter.fire();
+    refresh(element?: MCSFileItem): void {
+        //默认更新root -> 更新所有可展开的节点
+        this.onDidChangeTreeDataEventEmitter.fire(element);
     }
 
     getTreeItem(element: MCSFileItem): vscode.TreeItem {
-        const treeItem = new vscode.TreeItem(
-            element.name,
-            isDirectory(element)
-                ? vscode.TreeItemCollapsibleState.Collapsed
-                : vscode.TreeItemCollapsibleState.None
+        const isDir = isDirectory(element);
+        const treeItem = new vscode.TreeItem(element.name);
+
+        const sizeF = isDir ? "0" : formatFileSize(element.size);
+        const updateAtF = formatDateTime(element.time);
+        treeItem.tooltip = JSON.stringify({
+            sizeF: sizeF,
+            updateAtF: updateAtF,
+            mode: element.mode,
+        });
+        // 必须要有uri才能显示文件类型icon，否则icon只是普通的文件、目录icon
+        // 不用icon，有resourceUri也行
+        // 以resourceUri构建TreeItem也行，自动推断label
+        treeItem.resourceUri = vscode.Uri.parse(
+            buildMCSUrl({
+                path: element.path,
+            })
         );
-
-        treeItem.contextValue = isDirectory(element) ? "directory" : "file";
-        treeItem.iconPath = isDirectory(element)
-            ? new vscode.ThemeIcon("folder")
-            : new vscode.ThemeIcon("file");
-
-        if (isFile(element)) {
+        if (isDir) {
+            treeItem.description = updateAtF;
+            treeItem.collapsibleState =
+                vscode.TreeItemCollapsibleState.Collapsed;
+            treeItem.contextValue = "folder";
+        } else {
+            treeItem.description = `${sizeF} ${updateAtF}`;
+            treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
+            treeItem.contextValue = "file";
             treeItem.command = {
                 command: COMMAND_OPEN_FILE,
                 title: "Open File",
@@ -46,7 +64,7 @@ export class MCSFileTreeDataProvider
     }
 
     async getChildren(element?: MCSFileItem): Promise<MCSFileItem[]> {
-        if (!Config.apiKey || !GlobalVar.currentInstance) {
+        if (!GlobalVar.currentInstance) {
             return [];
         }
 

@@ -5,7 +5,6 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
     readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
         this._emitter.event;
-
     watch(
         _uri: vscode.Uri,
         _options: { recursive: boolean; excludes: string[] }

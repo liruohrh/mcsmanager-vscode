@@ -1,14 +1,17 @@
 import * as vscode from "vscode";
 import { MCSFileItem, MCSInstance } from "../types";
-import { isTextFile } from "../utils/mcs";
+import { buildMCSUrl, isTextFile } from "../utils/mcs";
 import { MCSFileTreeDataProvider } from "../providers/MCSFileTreeDataProvider";
 import { GlobalVar } from "../utils/global";
 
 export const COMMAND_REFRESH_FILES = "mcsManager.refreshFiles";
-export const COMMAND_OPEN_FILE =     "mcsManager.openFile";
+export const COMMAND_OPEN_FILE = "mcsManager.openFile";
 
-export function refreshFilesCommand(treeDataProvider: MCSFileTreeDataProvider) {
-    treeDataProvider.refresh();
+export function refreshFilesCommand(
+    treeDataProvider: MCSFileTreeDataProvider,
+    element?: MCSFileItem
+) {
+    treeDataProvider.refresh(element);
     GlobalVar.outputChannel.info("Files view refreshed");
 }
 
@@ -48,7 +51,11 @@ export async function openFileCommand(
 
     // 创建mcs scheme的URI
     const uri = vscode.Uri.parse(
-        `mcs:${fileItem.path}?daemonId=${instance.daemonId}&uuid=${instance.instanceUuid}`
+        buildMCSUrl({
+            path: fileItem.path,
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
+        })
     );
 
     // 打开文档

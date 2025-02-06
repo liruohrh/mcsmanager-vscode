@@ -1,105 +1,105 @@
 {
-  "name": "mcsmanager-vscode",
-  "displayName": "mcsmanager-vscode",
-  "description": "mcsmanager in vscode",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.94.0"
-  },
-  "categories": [
-    "MCS",
-    "Manager"
-  ],
-  "activationEvents": [
-    "onView:mcsManager"
-  ],
-  "main": "./dist/extension.js",
-  "icon": "assets/icon.png",
-  "contributes": {
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "mcsManager",
-          "title": "MCSManager",
-          "icon": "$(wrench)"
-        }
-      ]
+    "name": "mcsmanager-vscode",
+    "displayName": "mcsmanager-vscode",
+    "description": "mcsmanager in vscode",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.94.0"
     },
-    "views": {
-      "mcsManager": [
-        {
-          "id": "mcsManager",
-          "name": "MCSManager"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "mcsManager.login",
-        "title": "登录MCSManager"
-      }
+    "categories": [
+        "MCS",
+        "Manager"
     ],
-    "configuration": {
-      "title": "MCSManager",
-      "properties": {
-        "mcsManager.urlPrefix": {
-          "type": "string",
-          "description": "MCSManager服务urlPrefix"
+    "activationEvents": [
+        "onView:mcsManager"
+    ],
+    "main": "./dist/extension.js",
+    "icon": "assets/icon.png",
+    "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "mcsManager",
+                    "title": "MCSManager",
+                    "icon": "$(wrench)"
+                }
+            ]
         },
-        "mcsManager.username": {
-          "type": "string",
-          "description": "账号"
+        "views": {
+            "mcsManager": [
+                {
+                    "id": "mcsManager",
+                    "name": "MCSManager"
+                }
+            ]
         },
-        "mcsManager.password": {
-          "type": "string",
-          "description": "密码"
-        },
-        "mcsManager.autoLogin": {
-          "type": "boolean",
-          "description": "自动登录",
-          "default": true
-        },
-        "mcsManager.apiKey": {
-          "type": "string",
-          "description": "API访问密钥"
-        },
-        "mcsManager.pageSize": {
-          "type": "number",
-          "default": 100,
-          "description": "文件列表分页大小"
+        "commands": [
+            {
+                "command": "mcsManager.login",
+                "title": "登录MCSManager"
+            }
+        ],
+        "configuration": {
+            "title": "MCSManager",
+            "properties": {
+                "mcsManager.urlPrefix": {
+                    "type": "string",
+                    "description": "MCSManager服务urlPrefix"
+                },
+                "mcsManager.username": {
+                    "type": "string",
+                    "description": "账号"
+                },
+                "mcsManager.password": {
+                    "type": "string",
+                    "description": "密码"
+                },
+                "mcsManager.autoLogin": {
+                    "type": "boolean",
+                    "description": "自动登录",
+                    "default": true
+                },
+                "mcsManager.apiKey": {
+                    "type": "string",
+                    "description": "API访问密钥"
+                },
+                "mcsManager.pageSize": {
+                    "type": "number",
+                    "default": 100,
+                    "description": "文件列表分页大小"
+                }
+            }
         }
-      }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "npm run check-types && npm run lint && node esbuild.js",
+        "watch": "npm-run-all -p watch:*",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+        "package": "npm run check-types && npm run lint && node esbuild.js --production",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "check-types": "tsc --noEmit",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.10",
+        "@types/node": "20.x",
+        "@types/vscode": "^1.96.0",
+        "@typescript-eslint/eslint-plugin": "^8.22.0",
+        "@typescript-eslint/parser": "^8.22.0",
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.4.1",
+        "esbuild": "^0.24.2",
+        "eslint": "^9.19.0",
+        "npm-run-all": "^4.1.5",
+        "typescript": "^5.7.3"
+    },
+    "dependencies": {
+        "axios": "^1.7.9",
+        "mcsmanager-vscode": "file:"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "npm run check-types && npm run lint && node esbuild.js",
-    "watch": "npm-run-all -p watch:*",
-    "watch:esbuild": "node esbuild.js --watch",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "npm run check-types && npm run lint && node esbuild.js --production",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.96.0",
-    "@typescript-eslint/eslint-plugin": "^8.22.0",
-    "@typescript-eslint/parser": "^8.22.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "esbuild": "^0.24.2",
-    "eslint": "^9.19.0",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "axios": "^1.7.9",
-    "mcsmanager-vscode": "file:"
-  }
 }

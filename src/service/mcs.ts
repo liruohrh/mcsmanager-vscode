@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "../utils/global";
-import { logger } from "../utils/log";
 import { Config } from "../utils/config";
 import {
     getUserInfo as getLoginUser,
@@ -29,11 +28,7 @@ export class McsService {
     ): Promise<boolean> {
         const resp = await updateFileContent({ daemonId, uuid, target, text });
         if (resp.base.code !== 0) {
-            vscode.window.showErrorMessage(
-                `更新文件内容失败 ${JSON.stringify(resp.base)}`
-            );
-            logger.error(resp.base);
-            return false;
+            throw Error(`更新文件内容失败 ${JSON.stringify(resp.base)}`);
         }
         return resp.base.data || false;
     }
@@ -45,11 +40,7 @@ export class McsService {
     ): Promise<string | boolean | undefined> {
         const resp = await getFileContent({ daemonId, uuid, target });
         if (resp.base.code !== 0) {
-            vscode.window.showErrorMessage(
-                `获取文件内容失败 ${JSON.stringify(resp.base)}`
-            );
-            logger.error(resp.base);
-            return;
+            throw Error(`获取文件内容失败 ${JSON.stringify(resp.base)}`);
         }
         return resp.base.data;
     }
@@ -59,11 +50,7 @@ export class McsService {
     ): Promise<MCSFileListPageResp | undefined> {
         const resp = await getFileList(params);
         if (resp.base.code !== 0) {
-            vscode.window.showErrorMessage(
-                `获取文件列表失败 ${JSON.stringify(resp.base)}`
-            );
-            logger.error(resp.base);
-            return;
+            throw Error(`获取文件列表失败 ${JSON.stringify(resp.base)}`);
         }
 
         // 处理每个文件项的path
@@ -85,11 +72,7 @@ export class McsService {
     public async getLoginUser(): Promise<MCSLoginUser | undefined> {
         const resp = await getLoginUser();
         if (resp.base.code !== 0) {
-            vscode.window.showErrorMessage(
-                `获取登录用户信息失败 ${JSON.stringify(resp.base)}`
-            );
-            logger.error(resp.base);
-            return;
+            throw Error(`获取登录用户信息失败 ${JSON.stringify(resp.base)}`);
         }
         return resp.base.data;
     }
@@ -108,21 +91,19 @@ export class McsService {
             if (loginUser) {
                 this.onLogin(loginUser);
             }
-            logger.info("autoLogin: 已登录");
+            GlobalVar.outputChannel.info("autoLogin: 已登录");
             return;
         }
         await this.login();
-        logger.info("autoLogin: 自动登录成功");
+        GlobalVar.outputChannel.info("autoLogin: 自动登录成功");
     }
 
     public async login(): Promise<void> {
         if (!Config.urlPrefix) {
-            vscode.window.showErrorMessage(`登录失败，请配置urlPrefix`);
-            return;
+            throw Error(`登录失败，请配置urlPrefix`);
         }
         if (!Config.username || !Config.username) {
-            vscode.window.showErrorMessage(`登录失败，请配置登录凭证`);
-            return;
+            throw Error(`登录失败，请配置登录凭证`);
         }
 
         if (await this.isLogin()) {
@@ -135,11 +116,7 @@ export class McsService {
         });
 
         if (resp.base.code !== 0) {
-            vscode.window.showErrorMessage(
-                `登录失败，请检查配置 ${JSON.stringify(resp.base)}`
-            );
-            logger.error(resp);
-            return;
+            throw Error(`登录失败，请检查配置 ${JSON.stringify(resp.base)}`);
         }
         const cookies = resp.response!.headers["set-cookie"]!;
         const oldCookie =
@@ -153,8 +130,7 @@ export class McsService {
             cookies.map((cookie) => cookie.split("; ")[0])
         );
         GlobalVar.context.globalState.update(STATE_TOKEN, resp.base.data);
-        logger.info("登录成功");
-
+        GlobalVar.outputChannel.info("登录成功");
         const loginUser = await this.getLoginUser();
         if (loginUser) {
             this.onLogin(loginUser);
@@ -173,6 +149,7 @@ export class McsService {
         if (!token) {
             return;
         }
+        // 忽视错误
         await logout({ token });
         GlobalVar.context.globalState.update(STATE_TOKEN, undefined);
         const cookie = GlobalVar.context.globalState.get<string>(STATE_COOKIE);
@@ -186,6 +163,6 @@ export class McsService {
         }
         GlobalVar.context.globalState.update(STATE_LOGIN_COOKIE, undefined);
         GlobalVar.context.globalState.update(STATE_LOGIN_USER, undefined);
-        logger.info("logout: 登出成功");
+        GlobalVar.outputChannel.info("logout: 登出成功");
     }
 }

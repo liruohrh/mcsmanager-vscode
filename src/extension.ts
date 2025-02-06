@@ -3,26 +3,28 @@ import { MCSFileTreeDataProvider } from "./providers/MCSFileTreeDataProvider";
 import { MCSFileSystemProvider } from "./providers/MCSFileSystemProvider";
 import { McsService } from "./service/mcs";
 import { GlobalVar } from "./utils/global";
-import { logger } from "./utils/log";
 import { MCSFileItem, MCSInstance } from "./types";
 import { isTextFile } from "./utils/mcs";
 
 export function activate(context: vscode.ExtensionContext) {
-    logger.info("插件已激活");
+    GlobalVar.outputChannel.info("插件已激活");
     GlobalVar.context = context;
     GlobalVar.mcsService = new McsService();
+
+    // 创建输出面板
+    const outputChannel = vscode.window.createOutputChannel("MCSManager", {
+        log: true,
+    });
+    context.subscriptions.push(outputChannel);
+    GlobalVar.outputChannel = outputChannel;
 
     // 注册MCS文件系统提供者
     const fileSystemProvider = new MCSFileSystemProvider();
     context.subscriptions.push(
-        vscode.workspace.registerFileSystemProvider(
-            "mcs",
-            fileSystemProvider,
-            { 
-                isCaseSensitive: true,
-                isReadonly: false
-            }
-        )
+        vscode.workspace.registerFileSystemProvider("mcs", fileSystemProvider, {
+            isCaseSensitive: true,
+            isReadonly: false,
+        })
     );
 
     const treeDataProvider = new MCSFileTreeDataProvider();
@@ -87,8 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-    logger.info("deactivate");
-    logger.info({
+    GlobalVar.outputChannel.info("deactivate", {
         authToken: GlobalVar.context.globalState.get<string>("authToken"),
     });
 }

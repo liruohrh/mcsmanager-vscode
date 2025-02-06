@@ -1,12 +1,15 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "../utils/global";
-import { logger } from "../utils/log";
 
 export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
-    readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = this._emitter.event;
+    readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
+        this._emitter.event;
 
-    watch(_uri: vscode.Uri, _options: { recursive: boolean; excludes: string[] }): vscode.Disposable {
+    watch(
+        _uri: vscode.Uri,
+        _options: { recursive: boolean; excludes: string[] }
+    ): vscode.Disposable {
         return new vscode.Disposable(() => {});
     }
 
@@ -15,7 +18,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             type: vscode.FileType.File,
             ctime: Date.now(),
             mtime: Date.now(),
-            size: 0
+            size: 0,
         };
     }
 
@@ -28,62 +31,58 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     }
 
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-        try {
-            const params = new URLSearchParams(uri.query);
-            const daemonId = params.get('daemonId');
-            const uuid = params.get('uuid');
+        const params = new URLSearchParams(uri.query);
+        const daemonId = params.get("daemonId");
+        const uuid = params.get("uuid");
 
-            if (!daemonId || !uuid) {
-                throw new Error('Missing required parameters');
-            }
-
-            const content = await GlobalVar.mcsService.getFileContent(
-                daemonId,
-                uuid,
-                uri.path
-            );
-
-            if (!content || typeof content !== 'string') {
-                throw new Error('Failed to get file content');
-            }
-
-            return new TextEncoder().encode(content);
-        } catch (error) {
-            logger.error('Failed to read file:', error);
-            throw vscode.FileSystemError.FileNotFound(uri);
+        if (!daemonId || !uuid) {
+            throw Error("require daemonId or uuid");
         }
+
+        const content = await GlobalVar.mcsService.getFileContent(
+            daemonId,
+            uuid,
+            uri.path
+        );
+
+        if (!content || typeof content !== "string") {
+            throw Error(`Failed to get file content: ${uri.path}`);
+        }
+
+        return new TextEncoder().encode(content);
     }
 
-    async writeFile(uri: vscode.Uri, content: Uint8Array, _options: { create: boolean; overwrite: boolean }): Promise<void> {
-        try {
-            const params = new URLSearchParams(uri.query);
-            const daemonId = params.get('daemonId');
-            const uuid = params.get('uuid');
+    async writeFile(
+        uri: vscode.Uri,
+        content: Uint8Array,
+        _options: { create: boolean; overwrite: boolean }
+    ): Promise<void> {
+        const params = new URLSearchParams(uri.query);
+        const daemonId = params.get("daemonId");
+        const uuid = params.get("uuid");
 
-            if (!daemonId || !uuid) {
-                throw new Error('Missing required parameters');
-            }
-
-            const text = new TextDecoder().decode(content);
-            const success = await GlobalVar.mcsService.updateFileContent(
-                daemonId,
-                uuid,
-                uri.path,
-                text
-            );
-
-            if (!success) {
-                throw new Error('Failed to update file content');
-            }
-
-            this._emitter.fire([{
-                type: vscode.FileChangeType.Changed,
-                uri
-            }]);
-        } catch (error) {
-            logger.error('Failed to write file:', error);
-            throw vscode.FileSystemError.NoPermissions();
+        if (!daemonId || !uuid) {
+            throw Error("require daemonId or uuid");
         }
+
+        const text = new TextDecoder().decode(content);
+        const success = await GlobalVar.mcsService.updateFileContent(
+            daemonId,
+            uuid,
+            uri.path,
+            text
+        );
+
+        if (!success) {
+            throw Error(`Failed to update file content: ${uri.path}`);
+        }
+
+        this._emitter.fire([
+            {
+                type: vscode.FileChangeType.Changed,
+                uri,
+            },
+        ]);
     }
 
     delete(_uri: vscode.Uri): void {

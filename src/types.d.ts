@@ -17,10 +17,18 @@ export interface APIResp<T> {
     response?: AxiosResponse;
     status: number;
 }
+
 export interface BaseResp<T> {
     code: number;
     data?: T;
     message?: string;
+}
+
+export interface MCSPageResp<T> {
+    items: T[];
+    page: number;
+    pageSize: number;
+    total: number;
 }
 
 // mcs
@@ -82,4 +90,26 @@ export interface MCSInstanceInfo {
     playersChart: any[];
     openFrpStatus: boolean;
     latency: number;
+}
+
+export interface MCSFileItem {
+    name: string;
+    path: string; // 文件的完整路径
+    size: number;
+    time: string;
+    mode: number;
+    type: number; // 0: directory, 1: file
+}
+
+export interface MCSFileListPageResp extends MCSPageResp<MCSFileItem> {
+    absolutePath: string;
+}
+
+export interface MCSFileListReq {
+    daemonId: string;
+    uuid: string;
+    page?: number;
+    page_size?: number;
+    target: string;
+    file_name?: string;
 }

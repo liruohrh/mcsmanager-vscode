@@ -2,7 +2,14 @@ import * as vscode from "vscode";
 import { GlobalVar } from "../utils/global";
 import { logger } from "../utils/log";
 import { Config } from "../utils/config";
-import { getUserInfo as getLoginUser, login, logout } from "../api/mcs";
+import {
+    getUserInfo as getLoginUser,
+    login,
+    logout,
+    getFileList,
+    getFileContent,
+    updateFileContent,
+} from "../api/mcs";
 import { mergeCookie, removeCookie } from "../utils/cookie";
 import {
     STATE_COOKIE,
@@ -10,9 +17,67 @@ import {
     STATE_LOGIN_USER,
     STATE_TOKEN,
 } from "../utils/constant";
-import { MCSLoginUser } from "../types";
+import { MCSLoginUser, MCSFileListPageResp, MCSFileListReq } from "../types";
+import path from "path";
 
 export class McsService {
+    public async updateFileContent(
+        daemonId: string,
+        uuid: string,
+        target: string,
+        text: string
+    ): Promise<boolean> {
+        const resp = await updateFileContent({ daemonId, uuid, target, text });
+        if (resp.base.code !== 0) {
+            vscode.window.showErrorMessage(
+                `更新文件内容失败 ${JSON.stringify(resp.base)}`
+            );
+            logger.error(resp.base);
+            return false;
+        }
+        return resp.base.data || false;
+    }
+
+    public async getFileContent(
+        daemonId: string,
+        uuid: string,
+        target: string
+    ): Promise<string | boolean | undefined> {
+        const resp = await getFileContent({ daemonId, uuid, target });
+        if (resp.base.code !== 0) {
+            vscode.window.showErrorMessage(
+                `获取文件内容失败 ${JSON.stringify(resp.base)}`
+            );
+            logger.error(resp.base);
+            return;
+        }
+        return resp.base.data;
+    }
+
+    public async getFileList(
+        params: MCSFileListReq
+    ): Promise<MCSFileListPageResp | undefined> {
+        const resp = await getFileList(params);
+        if (resp.base.code !== 0) {
+            vscode.window.showErrorMessage(
+                `获取文件列表失败 ${JSON.stringify(resp.base)}`
+            );
+            logger.error(resp.base);
+            return;
+        }
+
+        // 处理每个文件项的path
+        const items = resp.base.data!.items.map((item) => ({
+            ...item,
+            path: path.posix.join(params.target, item.name),
+        }));
+
+        return {
+            ...resp.base.data!,
+            items,
+        };
+    }
+
     public async isLogin(): Promise<boolean> {
         const resp = await getLoginUser();
         return resp.status !== 403;

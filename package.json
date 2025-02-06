@@ -21,19 +21,25 @@
                 {
                     "id": "mcsManager",
                     "title": "MCSManager",
-                    "icon": "$(wrench)"
+                    "icon": "$(server)"
                 }
             ]
         },
         "views": {
             "mcsManager": [
                 {
-                    "id": "mcsManager",
-                    "name": "MCSManager"
+                    "id": "mcsFileExplorer",
+                    "name": "Files",
+                    "type": "tree"
                 }
             ]
         },
         "commands": [
+            {
+                "command": "mcsManager.openFile",
+                "title": "Open File",
+                "category": "MCSManager"
+            },
             {
                 "command": "mcsManager.login",
                 "title": "登录MCSManager"

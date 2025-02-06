@@ -1,8 +1,93 @@
 import { Config } from "../utils/config";
 import { GlobalVar } from "../utils/global";
-import { APIResp, MCSLoginUser } from "../types";
+import {
+    APIResp,
+    MCSLoginUser,
+    MCSFileListPageResp,
+    MCSFileListReq,
+} from "../types";
 import axiosG from "axios";
 import { STATE_COOKIE } from "../utils/constant";
+
+export async function updateFileContent({
+    daemonId,
+    uuid,
+    target,
+    text,
+}: {
+    daemonId: string;
+    uuid: string;
+    target: string;
+    text: string;
+}): Promise<APIResp<boolean>> {
+    return axios.put(
+        `/api/files`,
+        {
+            target,
+            text,
+        },
+        {
+            params: {
+                daemonId,
+                uuid,
+            },
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "x-requested-with": "XMLHttpRequest",
+            },
+        }
+    );
+}
+
+export async function getFileContent({
+    daemonId,
+    uuid,
+    target,
+}: {
+    daemonId: string;
+    uuid: string;
+    target: string;
+}): Promise<APIResp<string>> {
+    return axios.put(
+        `/api/files`,
+        {
+            target,
+        },
+        {
+            params: {
+                daemonId,
+                uuid,
+            },
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "x-requested-with": "XMLHttpRequest",
+            },
+        }
+    );
+}
+
+export async function getFileList({
+    daemonId,
+    uuid,
+    page = 0,
+    page_size = 100,
+    target,
+    file_name = "",
+}: MCSFileListReq): Promise<APIResp<MCSFileListPageResp>> {
+    return axios.get(`/api/files/list`, {
+        params: {
+            daemonId,
+            uuid,
+            page,
+            page_size,
+            target,
+            file_name,
+        },
+        headers: {
+            "x-requested-with": "XMLHttpRequest",
+        },
+    });
+}
 
 export async function getUserInfo(): Promise<APIResp<MCSLoginUser>> {
     return axios.get(`/api/auth/?advanced=true`, {
@@ -36,14 +121,23 @@ export async function logout({
         },
     });
 }
+
 const axios = axiosG.create();
 export const axiosMcs = axios;
 axios.defaults.validateStatus = (_) => true;
+const withApiKeyPaths = ["/api/files"];
 axios.interceptors.request.use((request) => {
     request.baseURL = Config.urlPrefix;
     const cookie = GlobalVar.context.globalState.get<string>(STATE_COOKIE);
     if (cookie) {
         request.headers["Cookie"] = cookie;
+    }
+    const apiKey = Config.apiKey;
+    if (
+        apiKey &&
+        withApiKeyPaths.some((prefix) => request.url?.startsWith(prefix))
+    ) {
+        request.params.apikey = apiKey;
     }
     return request;
 });
@@ -53,8 +147,8 @@ axios.interceptors.response.use(
         if (mcsResp.status !== 200) {
             //@ts-ignore
             response.base = {
-                code: -1,
-                message: `${mcsResp.status} ${mcsResp.data}`,
+                code: mcsResp.status,
+                message: mcsResp.data,
             };
         } else {
             //@ts-ignore
@@ -90,7 +184,7 @@ axios.interceptors.response.use(
             if (body && body.status) {
                 return {
                     base: {
-                        code: -1,
+                        code: body.status,
                         message: JSON.stringify(body),
                     },
                     error: error,

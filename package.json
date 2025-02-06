@@ -28,6 +28,11 @@
         "views": {
             "mcsManager": [
                 {
+                    "id": "mcsInstanceExplorer",
+                    "name": "Instances",
+                    "type": "tree"
+                },
+                {
                     "id": "mcsFileExplorer",
                     "name": "Files",
                     "type": "tree"
@@ -49,6 +54,17 @@
                 "title": "Refresh Files",
                 "category": "MCSManager",
                 "icon": "$(refresh)"
+            },
+            {
+                "command": "mcsManager.selectInstance",
+                "title": "Select Instance",
+                "category": "MCSManager"
+            },
+            {
+                "command": "mcsManager.refreshInstances",
+                "title": "Refresh Instances",
+                "category": "MCSManager",
+                "icon": "$(refresh)"
             }
         ],
         "menus": {
@@ -56,6 +72,11 @@
                 {
                     "command": "mcsManager.refreshFiles",
                     "when": "view == mcsFileExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "mcsManager.refreshInstances",
+                    "when": "view == mcsInstanceExplorer",
                     "group": "navigation"
                 }
             ]

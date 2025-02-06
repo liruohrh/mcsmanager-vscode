@@ -4,6 +4,9 @@ import { isTextFile } from "../utils/mcs";
 import { MCSFileTreeDataProvider } from "../providers/MCSFileTreeDataProvider";
 import { GlobalVar } from "../utils/global";
 
+export const COMMAND_REFRESH_FILES = "mcsManager.refreshFiles";
+export const COMMAND_OPEN_FILE =     "mcsManager.openFile";
+
 export function refreshFilesCommand(treeDataProvider: MCSFileTreeDataProvider) {
     treeDataProvider.refresh();
     GlobalVar.outputChannel.info("Files view refreshed");
@@ -14,8 +17,7 @@ export async function openFileCommand(
     instance: MCSInstance
 ) {
     if (!instance) {
-        vscode.window.showErrorMessage("No instance selected");
-        return;
+        throw Error("require instance");
     }
 
     // 检查是否是文本文件

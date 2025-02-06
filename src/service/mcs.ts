@@ -15,6 +15,7 @@ import {
     STATE_LOGIN_COOKIE,
     STATE_LOGIN_USER,
     STATE_TOKEN,
+    STATE_SELECTED_INSTANCE,
 } from "../utils/constant";
 import {
     MCSLoginUser,
@@ -22,6 +23,7 @@ import {
     MCSFileListReq,
     MCSFileItem,
     PageResp,
+    MCSInstance,
 } from "../types";
 import path from "path";
 
@@ -134,9 +136,9 @@ export class McsService {
             const loginUser = await this.getLoginUser();
             if (loginUser) {
                 this.onLogin(loginUser);
-            }
-            GlobalVar.outputChannel.info("autoLogin: 已登录");
-            return;
+                GlobalVar.outputChannel.info("autoLogin: 已登录");
+                return;
+            } 
         }
         await this.login();
         GlobalVar.outputChannel.info("autoLogin: 自动登录成功");
@@ -183,6 +185,25 @@ export class McsService {
     public onLogin(loginUser: MCSLoginUser) {
         GlobalVar.loginUser = loginUser;
         GlobalVar.context.globalState.update(STATE_LOGIN_USER, loginUser);
+
+        // 恢复选中的实例
+        const selectedInstance = GlobalVar.context.globalState.get<MCSInstance>(STATE_SELECTED_INSTANCE);
+        if (selectedInstance) {
+            // 检查选中的实例是否还存在
+            const instance = loginUser.instances.find(i => i.instanceUuid === selectedInstance.instanceUuid);
+            if (instance) {
+                GlobalVar.currentInstance = instance;
+                GlobalVar.outputChannel.info(`恢复选中实例: ${instance.nickname}`);
+                return;
+            }
+        }
+
+        // 如果没有选中的实例或者实例不存在了，选择第一个实例
+        if (loginUser.instances.length > 0) {
+            GlobalVar.currentInstance = loginUser.instances[0];
+            GlobalVar.context.globalState.update(STATE_SELECTED_INSTANCE, loginUser.instances[0]);
+            GlobalVar.outputChannel.info(`选中第一个实例: ${loginUser.instances[0].nickname}`);
+        }
     }
 
     public async logout(): Promise<void> {

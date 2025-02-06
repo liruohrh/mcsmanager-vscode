@@ -4,6 +4,7 @@ import { STATE_LOGIN_USER } from "../utils/constant";
 import { MCSFileItem, MCSLoginUser, MCSInstance } from "../types";
 import { isDirectory, isFile } from "../utils/mcs";
 import { Config } from "../utils/config";
+import { COMMAND_OPEN_FILE } from "../commands/files";
 
 export class MCSFileTreeDataProvider
     implements vscode.TreeDataProvider<MCSFileItem>
@@ -14,16 +15,6 @@ export class MCSFileTreeDataProvider
     readonly onDidChangeTreeData: vscode.Event<
         MCSFileItem | undefined | null | void
     > = this.onDidChangeTreeDataEventEmitter.event;
-    private currentInstance?: MCSInstance;
-
-    constructor() {
-        // 初始化时选择第一个实例
-        const loginUser =
-            GlobalVar.context.globalState.get<MCSLoginUser>(STATE_LOGIN_USER);
-        if (loginUser && loginUser.instances.length > 0) {
-            this.currentInstance = loginUser.instances[0];
-        }
-    }
 
     refresh(): void {
         //更新root -> 更新所有可展开的节点
@@ -45,9 +36,9 @@ export class MCSFileTreeDataProvider
 
         if (isFile(element)) {
             treeItem.command = {
-                command: "mcsManager.openFile",
+                command: COMMAND_OPEN_FILE,
                 title: "Open File",
-                arguments: [element, this.currentInstance],
+                arguments: [element, GlobalVar.currentInstance],
             };
         }
 
@@ -55,15 +46,15 @@ export class MCSFileTreeDataProvider
     }
 
     async getChildren(element?: MCSFileItem): Promise<MCSFileItem[]> {
-        if (!Config.apiKey || !this.currentInstance) {
+        if (!Config.apiKey || !GlobalVar.currentInstance) {
             return [];
         }
 
         const currentPath = element ? element.path : "/";
 
         const fileList = await GlobalVar.mcsService.getAllFileList({
-            daemonId: this.currentInstance.daemonId,
-            uuid: this.currentInstance.instanceUuid,
+            daemonId: GlobalVar.currentInstance.daemonId,
+            uuid: GlobalVar.currentInstance.instanceUuid,
             target: currentPath,
         });
 

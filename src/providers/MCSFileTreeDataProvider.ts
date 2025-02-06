@@ -8,12 +8,12 @@ import { Config } from "../utils/config";
 export class MCSFileTreeDataProvider
     implements vscode.TreeDataProvider<MCSFileItem>
 {
-    private _onDidChangeTreeData: vscode.EventEmitter<
+    private onDidChangeTreeDataEventEmitter: vscode.EventEmitter<
         MCSFileItem | undefined | null | void
     > = new vscode.EventEmitter<MCSFileItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<
         MCSFileItem | undefined | null | void
-    > = this._onDidChangeTreeData.event;
+    > = this.onDidChangeTreeDataEventEmitter.event;
     private currentInstance?: MCSInstance;
 
     constructor() {
@@ -26,7 +26,8 @@ export class MCSFileTreeDataProvider
     }
 
     refresh(): void {
-        this._onDidChangeTreeData.fire();
+        //更新root -> 更新所有可展开的节点
+        this.onDidChangeTreeDataEventEmitter.fire();
     }
 
     getTreeItem(element: MCSFileItem): vscode.TreeItem {
@@ -60,12 +61,12 @@ export class MCSFileTreeDataProvider
 
         const currentPath = element ? element.path : "/";
 
-        const fileList = await GlobalVar.mcsService.getFileList({
+        const fileList = await GlobalVar.mcsService.getAllFileList({
             daemonId: this.currentInstance.daemonId,
             uuid: this.currentInstance.instanceUuid,
             target: currentPath,
         });
 
-        return fileList?.items || [];
+        return fileList?.data || [];
     }
 }

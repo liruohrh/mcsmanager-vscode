@@ -16,7 +16,13 @@ import {
     STATE_LOGIN_USER,
     STATE_TOKEN,
 } from "../utils/constant";
-import { MCSLoginUser, MCSFileListPageResp, MCSFileListReq } from "../types";
+import {
+    MCSLoginUser,
+    MCSFileListPageResp,
+    MCSFileListReq,
+    MCSFileItem,
+    PageResp,
+} from "../types";
 import path from "path";
 
 export class McsService {
@@ -45,6 +51,44 @@ export class McsService {
         return resp.base.data;
     }
 
+    public async getAllFileList(
+        params: MCSFileListReq
+    ): Promise<PageResp<MCSFileItem> | undefined> {
+        const fileItems: MCSFileItem[] = [];
+        params.page_size = 5;
+        for (let i = 0; true; i++) {
+            params.page = i;
+            const resp = await getFileList(params);
+            if (resp.base.code !== 0) {
+                throw Error(
+                    `第 ${i + 1} 次获取文件列表失败 ${JSON.stringify(
+                        resp.base
+                    )}`
+                );
+            }
+
+            // 处理每个文件项的path
+            const items = resp.base.data!.items.map((item) => ({
+                ...item,
+                path: path.posix.join(params.target, item.name),
+            }));
+            fileItems.push(...items);
+            if (resp.base.data?.total === fileItems.length) {
+                GlobalVar.outputChannel.info(
+                    `执行了 ${i + 1} 次 获取 ${params.target} 文件列表， 共 ${
+                        fileItems.length
+                    }文件`
+                );
+                break;
+            }
+        }
+        return {
+            data: fileItems,
+            total: fileItems.length,
+            page: 0,
+            pageSize: fileItems.length,
+        };
+    }
     public async getFileList(
         params: MCSFileListReq
     ): Promise<MCSFileListPageResp | undefined> {

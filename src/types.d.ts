@@ -3,7 +3,6 @@ import { AxiosError, AxiosResponse } from "axios";
 export interface ServiceConfig {
     readonly urlPrefix: string;
     readonly apiKey: string;
-    readonly pageSize: number;
     readonly autoLogin: boolean;
     readonly username: string;
     readonly password: string;
@@ -22,6 +21,13 @@ export interface BaseResp<T> {
     code: number;
     data?: T;
     message?: string;
+}
+
+export interface PageResp<T> {
+    data?: T[];
+    page?: number;
+    pageSize?: number;
+    total?: number;
 }
 
 export interface MCSPageResp<T> {

@@ -3,15 +3,13 @@ import { MCSFileTreeDataProvider } from "./providers/MCSFileTreeDataProvider";
 import { MCSFileSystemProvider } from "./providers/MCSFileSystemProvider";
 import { McsService } from "./service/mcs";
 import { GlobalVar } from "./utils/global";
-import { MCSFileItem, MCSInstance } from "./types";
-import { isTextFile } from "./utils/mcs";
+import { openFileCommand, refreshFilesCommand } from "./commands/files";
 
 export function activate(context: vscode.ExtensionContext) {
-    GlobalVar.outputChannel.info("插件已激活");
     GlobalVar.context = context;
     GlobalVar.mcsService = new McsService();
 
-    // 创建输出面板
+    // 注册输出面板
     const outputChannel = vscode.window.createOutputChannel("MCSManager", {
         log: true,
     });
@@ -27,65 +25,22 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    // 注册视图
     const treeDataProvider = new MCSFileTreeDataProvider();
     vscode.window.registerTreeDataProvider("mcsFileExplorer", treeDataProvider);
 
+    // 注册刷新命令
+    context.subscriptions.push(
+        vscode.commands.registerCommand("mcsManager.refreshFiles", () => {
+            refreshFilesCommand(treeDataProvider);
+        })
+    );
     // 注册文件打开命令
     context.subscriptions.push(
-        vscode.commands.registerCommand(
-            "mcsManager.openFile",
-            async (fileItem: MCSFileItem, instance: MCSInstance) => {
-                if (!instance) {
-                    vscode.window.showErrorMessage("No instance selected");
-                    return;
-                }
-
-                // 检查是否是文本文件
-                if (!isTextFile(fileItem.path)) {
-                    const result = await vscode.window.showWarningMessage(
-                        `此文件类型无法直接查看。是否需要下载？`,
-                        "是",
-                        "否"
-                    );
-
-                    if (result === "是") {
-                        const uri = await vscode.window.showSaveDialog({
-                            defaultUri: vscode.Uri.file(fileItem.path),
-                            filters: {
-                                "All Files": ["*"],
-                            },
-                        });
-
-                        if (uri) {
-                            // TODO: 实现文件下载
-                            vscode.window.showInformationMessage(
-                                `文件将下载到: ${uri.fsPath}`
-                            );
-                        }
-                    }
-                    return;
-                }
-
-                // 创建mcs scheme的URI
-                const uri = vscode.Uri.parse(
-                    `mcs:${fileItem.path}?daemonId=${instance.daemonId}&uuid=${instance.instanceUuid}`
-                );
-
-                // 打开文档
-                const doc = await vscode.workspace.openTextDocument(uri);
-                await vscode.window.showTextDocument(doc, {
-                    preview: false,
-                });
-            }
-        )
+        vscode.commands.registerCommand("mcsManager.openFile", openFileCommand)
     );
 
-    //cmd
-    context.subscriptions.push(
-        vscode.commands.registerCommand("mcsManager.login", () =>
-            GlobalVar.mcsService.login()
-        )
-    );
+    GlobalVar.outputChannel.info("插件已激活");
 }
 
 export function deactivate() {

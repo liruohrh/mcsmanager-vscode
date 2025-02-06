@@ -19,7 +19,4 @@ export const Config: ServiceConfig = {
     get apiKey(): string {
         return getConfig().get<string>("apiKey") || "";
     },
-    get pageSize(): number {
-        return getConfig().get<number>("pageSize") || 100;
-    },
 };

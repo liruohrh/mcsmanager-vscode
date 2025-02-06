@@ -43,8 +43,23 @@
             {
                 "command": "mcsManager.login",
                 "title": "登录MCSManager"
+            },
+            {
+                "command": "mcsManager.refreshFiles",
+                "title": "Refresh Files",
+                "category": "MCSManager",
+                "icon": "$(refresh)"
             }
         ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "mcsManager.refreshFiles",
+                    "when": "view == mcsFileExplorer",
+                    "group": "navigation"
+                }
+            ]
+        },
         "configuration": {
             "title": "MCSManager",
             "properties": {
@@ -68,11 +83,6 @@
                 "mcsManager.apiKey": {
                     "type": "string",
                     "description": "API访问密钥"
-                },
-                "mcsManager.pageSize": {
-                    "type": "number",
-                    "default": 100,
-                    "description": "文件列表分页大小"
                 }
             }
         }

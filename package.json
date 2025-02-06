@@ -4,20 +4,72 @@
   "description": "mcsmanager in vscode",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.94.0"
   },
   "categories": [
-    "Other"
+    "MCS",
+    "Manager"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onView:mcsManager"
+  ],
   "main": "./dist/extension.js",
+  "icon": "assets/icon.png",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mcsManager",
+          "title": "MCSManager",
+          "icon": "$(wrench)"
+        }
+      ]
+    },
+    "views": {
+      "mcsManager": [
+        {
+          "id": "mcsManager",
+          "name": "MCSManager"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "mcsmanager-vscode.helloWorld",
-        "title": "Hello World"
+        "command": "mcsManager.login",
+        "title": "登录MCSManager"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "MCSManager",
+      "properties": {
+        "mcsManager.urlPrefix": {
+          "type": "string",
+          "description": "MCSManager服务urlPrefix"
+        },
+        "mcsManager.username": {
+          "type": "string",
+          "description": "账号"
+        },
+        "mcsManager.password": {
+          "type": "string",
+          "description": "密码"
+        },
+        "mcsManager.autoLogin": {
+          "type": "boolean",
+          "description": "自动登录",
+          "default": true
+        },
+        "mcsManager.apiKey": {
+          "type": "string",
+          "description": "API访问密钥"
+        },
+        "mcsManager.pageSize": {
+          "type": "number",
+          "default": 100,
+          "description": "文件列表分页大小"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

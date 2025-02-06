@@ -1,26 +1,31 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import { MCSFileTreeView } from "./views/MCSFileTreeView";
+import { MCSAPI } from "./service/mcs";
+import { GlobalVar } from "./utils/global";
+import { logger } from "./utils/log";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    GlobalVar.context = context;
+    GlobalVar.mcsAPI = new MCSAPI();
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "mcsmanager-vscode" is now active!');
+    logger.info("activate");
+    //
+    GlobalVar.mcsAPI.autoLogin();
+    //view
+    const mcsProvider = new MCSFileTreeView();
+    vscode.window.registerTreeDataProvider("mcsManager", mcsProvider);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('mcsmanager-vscode.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from mcsmanager-vscode!');
-	});
-
-	context.subscriptions.push(disposable);
+    //cmd
+    context.subscriptions.push(
+        vscode.commands.registerCommand("mcsManager.login", () =>
+            GlobalVar.mcsAPI.login()
+        )
+    );
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+    logger.info("deactivate");
+    logger.info({
+        authToken: GlobalVar.context.globalState.get<string>("authToken"),
+    });
+}

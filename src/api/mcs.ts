@@ -4,7 +4,7 @@ import {
     APIResp,
     MCSLoginUser,
     MCSFileListPageResp,
-    MCSFileListReq,
+    MCSFileListReq
 } from "../types";
 import axiosG from "axios";
 import { STATE_COOKIE } from "../utils/constant";
@@ -13,7 +13,7 @@ export async function updateFileContent({
     daemonId,
     uuid,
     target,
-    text,
+    text
 }: {
     daemonId: string;
     uuid: string;
@@ -24,17 +24,17 @@ export async function updateFileContent({
         `/api/files`,
         {
             target,
-            text,
+            text
         },
         {
             params: {
                 daemonId,
-                uuid,
+                uuid
             },
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
-                "x-requested-with": "XMLHttpRequest",
-            },
+                "x-requested-with": "XMLHttpRequest"
+            }
         }
     );
 }
@@ -42,7 +42,7 @@ export async function updateFileContent({
 export async function getFileContent({
     daemonId,
     uuid,
-    target,
+    target
 }: {
     daemonId: string;
     uuid: string;
@@ -51,17 +51,17 @@ export async function getFileContent({
     return axios.put(
         `/api/files`,
         {
-            target,
+            target
         },
         {
             params: {
                 daemonId,
-                uuid,
+                uuid
             },
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
-                "x-requested-with": "XMLHttpRequest",
-            },
+                "x-requested-with": "XMLHttpRequest"
+            }
         }
     );
 }
@@ -70,55 +70,56 @@ export async function getFileList({
     daemonId,
     uuid,
     page = 0,
-    page_size = 100,
+    // [最高100](https://github.com/MCSManager/MCSManager/blob/master/daemon/src/service/system_file.ts#L85)
+    pageSize = 100,
     target,
-    file_name = "",
+    fileName = ""
 }: MCSFileListReq): Promise<APIResp<MCSFileListPageResp>> {
     return axios.get(`/api/files/list`, {
         params: {
             daemonId,
             uuid,
             page,
-            page_size,
+            page_size: pageSize,
             target,
-            file_name,
+            file_name: fileName
         },
         headers: {
-            "x-requested-with": "XMLHttpRequest",
-        },
+            "x-requested-with": "XMLHttpRequest"
+        }
     });
 }
 
 export async function getUserInfo(): Promise<APIResp<MCSLoginUser>> {
     return axios.get(`/api/auth/?advanced=true`, {
         headers: {
-            "x-requested-with": "XMLHttpRequest",
-        },
+            "x-requested-with": "XMLHttpRequest"
+        }
     });
 }
 
 export async function login({
     username,
-    password,
+    password
 }: {
     username: string;
     password: string;
 }): Promise<APIResp<string>> {
     return axios.post(`/api/auth/login`, {
         username,
-        password,
+        password
     });
 }
 
 export async function logout({
-    token,
+    token
 }: {
     token: string;
 }): Promise<APIResp<boolean>> {
     return axios.get(`/api/auth/logout`, {
         params: {
-            token: token,
-        },
+            token: token
+        }
     });
 }
 
@@ -148,13 +149,13 @@ axios.interceptors.response.use(
             //@ts-ignore
             response.base = {
                 code: mcsResp.status,
-                message: mcsResp.data,
+                message: mcsResp.data
             };
         } else {
             //@ts-ignore
             response.base = {
                 code: 0,
-                data: mcsResp.data,
+                data: mcsResp.data
             };
         }
         //@ts-ignore
@@ -167,17 +168,17 @@ axios.interceptors.response.use(
             return {
                 base: {
                     code: -1,
-                    message: `client error ${error.code}`,
+                    message: `client error ${error.code}`
                 },
-                error: error,
+                error: error
             };
         } else if (error.message && !error.response) {
             return {
                 base: {
                     code: -1,
-                    message: error.message,
+                    message: error.message
                 },
-                error: error,
+                error: error
             };
         } else {
             const body = error.response.data;
@@ -185,19 +186,19 @@ axios.interceptors.response.use(
                 return {
                     base: {
                         code: body.status,
-                        message: JSON.stringify(body),
+                        message: JSON.stringify(body)
                     },
                     error: error,
-                    status: error.response.status,
+                    status: error.response.status
                 };
             }
             return {
                 base: {
                     code: -1,
-                    message: `${error.code} ${body}`,
+                    message: `${error.code} ${body}`
                 },
                 error: error,
-                status: error.response.status,
+                status: error.response.status
             };
         }
     }

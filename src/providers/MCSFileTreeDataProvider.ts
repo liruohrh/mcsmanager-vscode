@@ -5,7 +5,7 @@ import {
     isDirectory,
     formatFileSize,
     formatDateTime,
-    buildMCSUrl,
+    buildMCSUrl
 } from "../utils/mcs";
 import { Config } from "../utils/config";
 import { COMMAND_OPEN_FILE } from "../commands/files";
@@ -34,14 +34,14 @@ export class MCSFileTreeDataProvider
         treeItem.tooltip = JSON.stringify({
             sizeF: sizeF,
             updateAtF: updateAtF,
-            mode: element.mode,
+            mode: element.mode
         });
         // 必须要有uri才能显示文件类型icon，否则icon只是普通的文件、目录icon
         // 不用icon，有resourceUri也行
         // 以resourceUri构建TreeItem也行，自动推断label
         treeItem.resourceUri = vscode.Uri.parse(
             buildMCSUrl({
-                path: element.path,
+                path: element.path
             })
         );
         if (isDir) {
@@ -56,7 +56,7 @@ export class MCSFileTreeDataProvider
             treeItem.command = {
                 command: COMMAND_OPEN_FILE,
                 title: "Open File",
-                arguments: [element, GlobalVar.currentInstance],
+                arguments: [element, GlobalVar.currentInstance]
             };
         }
 
@@ -64,7 +64,10 @@ export class MCSFileTreeDataProvider
     }
 
     async getChildren(element?: MCSFileItem): Promise<MCSFileItem[]> {
-        if (!GlobalVar.currentInstance) {
+        if (
+            !(await GlobalVar.mcsService.isLogin2()) ||
+            !GlobalVar.currentInstance
+        ) {
             return [];
         }
 
@@ -73,7 +76,7 @@ export class MCSFileTreeDataProvider
         const fileList = await GlobalVar.mcsService.getAllFileList({
             daemonId: GlobalVar.currentInstance.daemonId,
             uuid: GlobalVar.currentInstance.instanceUuid,
-            target: currentPath,
+            target: currentPath
         });
 
         return fileList?.data || [];

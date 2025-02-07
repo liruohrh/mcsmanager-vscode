@@ -115,7 +115,7 @@ export interface MCSFileListReq {
     daemonId: string;
     uuid: string;
     page?: number;
-    page_size?: number;
+    pageSize?: number;
     target: string;
-    file_name?: string;
+    fileName?: string;
 }

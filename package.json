@@ -61,25 +61,70 @@
                 "title": "Refresh Instances",
                 "category": "MCSManager",
                 "icon": "$(refresh)"
+            },
+            {
+                "command": "mcsManager.login",
+                "title": "Login",
+                "category": "MCSManager",
+                "icon": "$(sign-in)"
+            },
+            {
+                "command": "mcsManager.logout",
+                "title": "Logout",
+                "category": "MCSManager",
+                "icon": "$(sign-out)"
+            },
+            {
+                "command": "mcsManager.openConfig",
+                "title": "Open Settings",
+                "category": "MCSManager",
+                "icon": "$(gear)"
+            }
+        ],
+        "viewsWelcome": [
+            {
+                "view": "mcsInstanceExplorer",
+                "contents": "No instances found.\n[Login](command:mcsManager.login)",
+                "when": "!mcsManager.isLoggedIn"
+            },
+            {
+                "view": "mcsFileExplorer",
+                "contents": "No files found.\n[Login](command:mcsManager.login)",
+                "when": "!mcsManager.isLoggedIn"
             }
         ],
         "menus": {
             "view/title": [
                 {
-                    "command": "mcsManager.refreshFiles",
-                    "when": "view == mcsFileExplorer",
+                    "command": "mcsManager.login",
+                    "when": "view == mcsInstanceExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "mcsManager.logout",
+                    "when": "view == mcsInstanceExplorer",
                     "group": "navigation"
                 },
                 {
                     "command": "mcsManager.refreshInstances",
+                    "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
+                    "group": "navigation"
+                },
+                {
+                    "command": "mcsManager.openConfig",
                     "when": "view == mcsInstanceExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "mcsManager.refreshFiles",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
                     "group": "navigation"
                 }
             ],
             "view/item/context": [
                 {
                     "command": "mcsManager.refreshFiles",
-                    "when": "view == mcsFileExplorer && viewItem == directory",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && viewItem == folder",
                     "group": "inline"
                 }
             ]

@@ -16,7 +16,7 @@ export async function refreshInstancesCommand(
     if (!loginUser) {
         throw Error("获取用户信息失败");
     }
-    GlobalVar.mcsService.onLogin(loginUser);
+    await GlobalVar.mcsService.onLogin(loginUser);
     instanceTreeDataProvider.refresh();
     fileTreeDataProvider.refresh();
     GlobalVar.outputChannel.info("Instances refreshed");
@@ -28,10 +28,18 @@ export async function selectInstanceCommand(
     instance: MCSInstance
 ) {
     GlobalVar.currentInstance = instance;
-    GlobalVar.context.globalState.update(STATE_SELECTED_INSTANCE, instance);
+    await GlobalVar.context.globalState.update(
+        STATE_SELECTED_INSTANCE,
+        instance
+    );
     instanceTreeDataProvider.refresh();
     fileTreeDataProvider.refresh();
     const message = `选中实例: ${instance.nickname}`;
     GlobalVar.outputChannel.info(message);
     await vscode.window.showInformationMessage(message);
+    vscode.commands.executeCommand(
+        "setContext",
+        "mcsManager.hasSelectedInstance",
+        true
+    );
 }

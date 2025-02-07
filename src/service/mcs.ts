@@ -57,7 +57,6 @@ export class McsService {
         params: MCSFileListReq
     ): Promise<PageResp<MCSFileItem> | undefined> {
         const fileItems: MCSFileItem[] = [];
-        params.page_size = 5;
         for (let i = 0; true; i++) {
             params.page = i;
             const resp = await getFileList(params);
@@ -110,7 +109,15 @@ export class McsService {
             items,
         };
     }
-
+    /**
+     * 通过内存登录态，基本能判断有无登录
+     */
+    public async isLogin2(): Promise<boolean> {
+        return !!GlobalVar.loginUser;
+    }
+    /**
+     * 通过获取用户信息来判断有无登录，更加精准
+     */
     public async isLogin(): Promise<boolean> {
         const resp = await getLoginUser();
         return resp.status !== 403;
@@ -134,12 +141,11 @@ export class McsService {
         }
         if (await this.isLogin()) {
             const loginUser = await this.getLoginUser();
-            if (loginUser) {
-                this.onLogin(loginUser);
-                GlobalVar.outputChannel.info("autoLogin: 已登录");
-                return;
-            } 
+            await this.onLogin(loginUser!);
+            GlobalVar.outputChannel.info("autoLogin: 已登录");
+            return;
         }
+        await this.clearLoginData();
         await this.login();
         GlobalVar.outputChannel.info("autoLogin: 自动登录成功");
     }
@@ -152,7 +158,7 @@ export class McsService {
             throw Error(`登录失败，请配置登录凭证`);
         }
 
-        if (await this.isLogin()) {
+        if (await this.isLogin2()) {
             await this.logout();
         }
 
@@ -167,67 +173,117 @@ export class McsService {
         const cookies = resp.response!.headers["set-cookie"]!;
         const oldCookie =
             GlobalVar.context.globalState.get<string>(STATE_COOKIE) || "";
-        GlobalVar.context.globalState.update(
+        await GlobalVar.context.globalState.update(
             STATE_COOKIE,
             mergeCookie(cookies, oldCookie)
         );
-        GlobalVar.context.globalState.update(
+        const loginUser = await this.getLoginUser();
+        if (!loginUser) {
+            await this.removeLoginCookie();
+            throw Error("登录成功，但是无法获取用户信息");
+        }
+        await GlobalVar.context.globalState.update(
             STATE_LOGIN_COOKIE,
             cookies.map((cookie) => cookie.split("; ")[0])
         );
-        GlobalVar.context.globalState.update(STATE_TOKEN, resp.base.data);
+        await GlobalVar.context.globalState.update(STATE_TOKEN, resp.base.data);
+        await this.onLogin(loginUser);
         GlobalVar.outputChannel.info("登录成功");
-        const loginUser = await this.getLoginUser();
-        if (loginUser) {
-            this.onLogin(loginUser);
-        }
     }
-    public onLogin(loginUser: MCSLoginUser) {
+    public async onLogin(loginUser: MCSLoginUser): Promise<void> {
         GlobalVar.loginUser = loginUser;
-        GlobalVar.context.globalState.update(STATE_LOGIN_USER, loginUser);
+        await GlobalVar.context.globalState.update(STATE_LOGIN_USER, loginUser);
+        await vscode.commands.executeCommand(
+            "setContext",
+            "mcsManager.isLoggedIn",
+            true
+        );
 
         // 恢复选中的实例
-        const selectedInstance = GlobalVar.context.globalState.get<MCSInstance>(STATE_SELECTED_INSTANCE);
+        const selectedInstance = GlobalVar.context.globalState.get<MCSInstance>(
+            STATE_SELECTED_INSTANCE
+        );
         if (selectedInstance) {
             // 检查选中的实例是否还存在
-            const instance = loginUser.instances.find(i => i.instanceUuid === selectedInstance.instanceUuid);
+            const instance = loginUser.instances.find(
+                (i) => i.instanceUuid === selectedInstance.instanceUuid
+            );
             if (instance) {
                 GlobalVar.currentInstance = instance;
-                GlobalVar.outputChannel.info(`恢复选中实例: ${instance.nickname}`);
+                await vscode.commands.executeCommand(
+                    "setContext",
+                    "mcsManager.hasSelectedInstance",
+                    true
+                );
+                GlobalVar.outputChannel.info(
+                    `恢复选中实例: ${instance.nickname}`
+                );
                 return;
             }
-        }
-
-        // 如果没有选中的实例或者实例不存在了，选择第一个实例
-        if (loginUser.instances.length > 0) {
-            GlobalVar.currentInstance = loginUser.instances[0];
-            GlobalVar.context.globalState.update(STATE_SELECTED_INSTANCE, loginUser.instances[0]);
-            GlobalVar.outputChannel.info(`选中第一个实例: ${loginUser.instances[0].nickname}`);
         }
     }
 
     public async logout(): Promise<void> {
         if (!Config.urlPrefix) {
-            return;
+            throw Error(`登出失败，请配置urlPrefix`);
         }
         const token = GlobalVar.context.globalState.get<string>(STATE_TOKEN);
         if (!token) {
-            return;
+            throw Error(`登出失败，无法获取持久化的token`);
         }
         // 忽视错误
         await logout({ token });
-        GlobalVar.context.globalState.update(STATE_TOKEN, undefined);
+        await this.clearLoginState();
+        await this.clearLoginMemoState();
+        GlobalVar.outputChannel.info("logout: 登出成功");
+    }
+    /**
+     * 开启插件时需要重新获取的、非内存变量
+     */
+    public async clearLoginState(): Promise<void> {
+        await GlobalVar.context.globalState.update(STATE_LOGIN_USER, undefined);
+    }
+    public async clearLoginMemoState(): Promise<void> {
+        GlobalVar.loginUser = undefined;
+        GlobalVar.currentInstance = undefined;
+        await vscode.commands.executeCommand(
+            "setContext",
+            "mcsManager.isLoggedIn",
+            false
+        );
+        await vscode.commands.executeCommand(
+            "setContext",
+            "mcsManager.hasSelectedInstance",
+            false
+        );
+    }
+    /**
+     * 登录态、内存变量
+     */
+    public async clearLoginData(): Promise<void> {
+        await GlobalVar.context.globalState.update(STATE_TOKEN, undefined);
+        await this.removeLoginCookie();
+
+        await GlobalVar.context.globalState.update(
+            STATE_SELECTED_INSTANCE,
+            undefined
+        );
+        await this.clearLoginMemoState();
+        await this.clearLoginState();
+    }
+    public async removeLoginCookie(): Promise<void> {
         const cookie = GlobalVar.context.globalState.get<string>(STATE_COOKIE);
         const loginCookieNames =
             GlobalVar.context.globalState.get<string[]>(STATE_LOGIN_COOKIE);
         if (cookie && loginCookieNames) {
-            GlobalVar.context.globalState.update(
+            await GlobalVar.context.globalState.update(
                 STATE_COOKIE,
                 removeCookie(cookie, loginCookieNames)
             );
         }
-        GlobalVar.context.globalState.update(STATE_LOGIN_COOKIE, undefined);
-        GlobalVar.context.globalState.update(STATE_LOGIN_USER, undefined);
-        GlobalVar.outputChannel.info("logout: 登出成功");
+        await GlobalVar.context.globalState.update(
+            STATE_LOGIN_COOKIE,
+            undefined
+        );
     }
 }

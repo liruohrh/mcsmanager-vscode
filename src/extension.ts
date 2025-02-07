@@ -16,7 +16,14 @@ import {
     refreshInstancesCommand,
     selectInstanceCommand,
 } from "./commands/instance";
-import { STATE_LOGIN_USER } from "./utils/constant";
+import {
+    COMMAND_LOGIN,
+    COMMAND_LOGOUT,
+    COMMAND_OPEN_CONFIG,
+    loginCommand,
+    logoutCommand,
+    openConfigCommand,
+} from "./commands/auth";
 
 export function activate(context: vscode.ExtensionContext) {
     GlobalVar.context = context;
@@ -29,6 +36,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(outputChannel);
     GlobalVar.outputChannel = outputChannel;
 
+    // context.globalState
+    //     .keys()
+    //     .forEach(
+    //         async (key) => await context.globalState.update(key, undefined)
+    //     );
     GlobalVar.mcsService.autoLogin().then(async (_) => {
         await afterLogin();
     });
@@ -61,6 +73,22 @@ async function afterLogin() {
     );
 
     // 注册命令
+
+    GlobalVar.context.subscriptions.push(
+        vscode.commands.registerCommand(COMMAND_OPEN_CONFIG, openConfigCommand)
+    );
+
+    // 登录相关
+    GlobalVar.context.subscriptions.push(
+        vscode.commands.registerCommand(COMMAND_LOGIN, () => {
+            loginCommand(fileTreeDataProvider, instanceTreeDataProvider);
+        })
+    );
+    GlobalVar.context.subscriptions.push(
+        vscode.commands.registerCommand(COMMAND_LOGOUT, () => {
+            logoutCommand(fileTreeDataProvider, instanceTreeDataProvider);
+        })
+    );
 
     // 选中实例
     GlobalVar.context.subscriptions.push(
@@ -99,8 +127,5 @@ async function afterLogin() {
 }
 
 export function deactivate() {
-    GlobalVar.context.globalState.update(STATE_LOGIN_USER, undefined);
-    GlobalVar.outputChannel.info("deactivate", {
-        authToken: GlobalVar.context.globalState.get<string>("authToken"),
-    });
+    GlobalVar.mcsService.clearLoginState();
 }

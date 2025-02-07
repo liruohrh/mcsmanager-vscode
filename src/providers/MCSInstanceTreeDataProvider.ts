@@ -33,15 +33,15 @@ export class MCSInstanceTreeDataProvider
         treeItem.command = {
             command: COMMAND_SELECT_INSTANCE,
             title: "Select Instance",
-            arguments: [element],
+            arguments: [element]
         };
         return treeItem;
     }
 
     async getChildren(): Promise<MCSInstance[]> {
-        if (!GlobalVar.loginUser) {
+        if (!(await GlobalVar.mcsService.isLogin2())) {
             return [];
         }
-        return GlobalVar.loginUser.instances;
+        return GlobalVar.loginUser!.instances;
     }
 }

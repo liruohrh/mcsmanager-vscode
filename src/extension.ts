@@ -8,13 +8,13 @@ import {
     COMMAND_OPEN_FILE,
     COMMAND_REFRESH_FILES,
     openFileCommand,
-    refreshFilesCommand,
+    refreshFilesCommand
 } from "./commands/files";
 import {
     COMMAND_REFRESH_INSTANCES,
     COMMAND_SELECT_INSTANCE,
     refreshInstancesCommand,
-    selectInstanceCommand,
+    selectInstanceCommand
 } from "./commands/instance";
 import {
     COMMAND_LOGIN,
@@ -22,7 +22,7 @@ import {
     COMMAND_OPEN_CONFIG,
     loginCommand,
     logoutCommand,
-    openConfigCommand,
+    openConfigCommand
 } from "./commands/auth";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册输出面板
     const outputChannel = vscode.window.createOutputChannel("MCSManager", {
-        log: true,
+        log: true
     });
     context.subscriptions.push(outputChannel);
     GlobalVar.outputChannel = outputChannel;
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
     //     .forEach(
     //         async (key) => await context.globalState.update(key, undefined)
     //     );
-    GlobalVar.mcsService.autoLogin().then(async (_) => {
+    GlobalVar.mcsService.autoLogin().finally(async () => {
         await afterLogin();
     });
 }
@@ -52,7 +52,7 @@ async function afterLogin() {
     GlobalVar.context.subscriptions.push(
         vscode.workspace.registerFileSystemProvider("mcs", fileSystemProvider, {
             isCaseSensitive: true,
-            isReadonly: false,
+            isReadonly: false
         })
     );
 

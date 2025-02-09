@@ -13,9 +13,6 @@ export async function refreshInstancesCommand(
     instanceTreeDataProvider: MCSInstanceTreeDataProvider
 ) {
     const loginUser = await GlobalVar.mcsService.getLoginUser();
-    if (!loginUser) {
-        throw Error("获取用户信息失败");
-    }
     await GlobalVar.mcsService.onLogin(loginUser);
     instanceTreeDataProvider.refresh();
     fileTreeDataProvider.refresh();

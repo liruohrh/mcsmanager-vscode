@@ -4,16 +4,155 @@ import {
     APIResp,
     MCSLoginUser,
     MCSFileListPageResp,
-    MCSFileListReq
+    MCSFileListReq,
+    MCSFileConfig,
 } from "../types";
-import axiosG from "axios";
+import axiosG, { AxiosHeaders } from "axios";
 import { STATE_COOKIE } from "../utils/constant";
+import fs from "fs";
+import path from "path";
+import * as vscode from "vscode";
+import FormData from "form-data";
+
+export async function downloadFile({
+    password,
+    addr,
+    downloadFilename,
+}: MCSFileConfig & { downloadFilename: string }): Promise<
+    APIResp<NodeJS.ArrayBufferView>
+> {
+    return axios.get(`/download/${password}/${downloadFilename}`, {
+        baseURL: `${
+            Config.urlPrefix.startsWith("https") ? "https" : "http"
+        }://${addr}/`,
+        responseType: "arraybuffer",
+    });
+}
+export async function uploadFile({
+    password,
+    addr,
+    file,
+}: MCSFileConfig & { file: fs.ReadStream }): Promise<APIResp<string>> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return axios.post(`/upload/${password}`, formData, {
+        baseURL: `${
+            Config.urlPrefix.startsWith("https") ? "https" : "http"
+        }://${addr}/`,
+        headers: {
+            ...formData.getHeaders(),
+        },
+    });
+}
+
+/**
+ *
+ * @param fileName  获取下载配置
+ * @param uploadDir  获取上传配置
+ * @returns
+ */
+export async function getFileConfig({
+    daemonId,
+    uuid,
+    fileName,
+    uploadDir,
+}: {
+    daemonId: string;
+    uuid: string;
+    fileName?: string;
+    uploadDir?: string;
+}): Promise<APIResp<MCSFileConfig>> {
+    let lastPath = fileName ? "download" : "upload";
+    let paramName = fileName ? "file_name" : "upload_dir";
+    return axios.post(`/api/files/${lastPath}`, null, {
+        params: {
+            daemonId,
+            uuid,
+            [paramName]: fileName || uploadDir,
+        },
+    });
+}
+
+export async function createDir({
+    daemonId,
+    uuid,
+    target,
+}: {
+    daemonId: string;
+    uuid: string;
+    target: string;
+}): Promise<APIResp<boolean>> {
+    return axios.post(
+        `/api/files/mkdir`,
+        {
+            target,
+        },
+        {
+            params: {
+                daemonId,
+                uuid,
+            },
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+            },
+        }
+    );
+}
+
+export async function createFile({
+    daemonId,
+    uuid,
+    target,
+}: {
+    daemonId: string;
+    uuid: string;
+    target: string;
+}): Promise<APIResp<boolean>> {
+    return axios.post(
+        `/api/files/touch`,
+        {
+            target,
+        },
+        {
+            params: {
+                daemonId,
+                uuid,
+            },
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+            },
+        }
+    );
+}
+
+export async function deleteFiles({
+    daemonId,
+    uuid,
+    targets,
+}: {
+    daemonId: string;
+    uuid: string;
+    targets: string[];
+}): Promise<APIResp<boolean>> {
+    return axios.delete(`/api/files`, {
+        data: {
+            targets,
+        },
+        params: {
+            daemonId,
+            uuid,
+        },
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+        },
+    });
+}
 
 export async function updateFileContent({
     daemonId,
     uuid,
     target,
-    text
+    text,
 }: {
     daemonId: string;
     uuid: string;
@@ -24,17 +163,17 @@ export async function updateFileContent({
         `/api/files`,
         {
             target,
-            text
+            text,
         },
         {
             params: {
                 daemonId,
-                uuid
+                uuid,
             },
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
-                "x-requested-with": "XMLHttpRequest"
-            }
+                "x-requested-with": "XMLHttpRequest",
+            },
         }
     );
 }
@@ -42,26 +181,26 @@ export async function updateFileContent({
 export async function getFileContent({
     daemonId,
     uuid,
-    target
+    target,
 }: {
     daemonId: string;
     uuid: string;
     target: string;
-}): Promise<APIResp<string>> {
+}): Promise<APIResp<string | boolean>> {
     return axios.put(
         `/api/files`,
         {
-            target
+            target,
         },
         {
             params: {
                 daemonId,
-                uuid
+                uuid,
             },
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
-                "x-requested-with": "XMLHttpRequest"
-            }
+                "x-requested-with": "XMLHttpRequest",
+            },
         }
     );
 }
@@ -73,7 +212,7 @@ export async function getFileList({
     // [最高100](https://github.com/MCSManager/MCSManager/blob/master/daemon/src/service/system_file.ts#L85)
     pageSize = 100,
     target,
-    fileName = ""
+    fileName = "",
 }: MCSFileListReq): Promise<APIResp<MCSFileListPageResp>> {
     return axios.get(`/api/files/list`, {
         params: {
@@ -82,44 +221,44 @@ export async function getFileList({
             page,
             page_size: pageSize,
             target,
-            file_name: fileName
+            file_name: fileName,
         },
         headers: {
-            "x-requested-with": "XMLHttpRequest"
-        }
+            "x-requested-with": "XMLHttpRequest",
+        },
     });
 }
 
 export async function getUserInfo(): Promise<APIResp<MCSLoginUser>> {
     return axios.get(`/api/auth/?advanced=true`, {
         headers: {
-            "x-requested-with": "XMLHttpRequest"
-        }
+            "x-requested-with": "XMLHttpRequest",
+        },
     });
 }
 
 export async function login({
     username,
-    password
+    password,
 }: {
     username: string;
     password: string;
 }): Promise<APIResp<string>> {
     return axios.post(`/api/auth/login`, {
         username,
-        password
+        password,
     });
 }
 
 export async function logout({
-    token
+    token,
 }: {
     token: string;
 }): Promise<APIResp<boolean>> {
     return axios.get(`/api/auth/logout`, {
         params: {
-            token: token
-        }
+            token: token,
+        },
     });
 }
 
@@ -128,7 +267,9 @@ export const axiosMcs = axios;
 axios.defaults.validateStatus = (_) => true;
 const withApiKeyPaths = ["/api/files"];
 axios.interceptors.request.use((request) => {
-    request.baseURL = Config.urlPrefix;
+    if (!request.baseURL) {
+        request.baseURL = Config.urlPrefix;
+    }
     const cookie = GlobalVar.context.globalState.get<string>(STATE_COOKIE);
     if (cookie) {
         request.headers["Cookie"] = cookie;
@@ -144,19 +285,31 @@ axios.interceptors.request.use((request) => {
 });
 axios.interceptors.response.use(
     (response) => {
-        const mcsResp = response.data;
-        if (mcsResp.status !== 200) {
-            //@ts-ignore
-            response.base = {
-                code: mcsResp.status,
-                message: mcsResp.data
-            };
+        const ct = response.headers["content-type"]?.toString();
+        if (ct?.includes("json")) {
+            const mcsResp = response.data;
+            if (mcsResp.status !== 200) {
+                //@ts-ignore
+                response.base = {
+                    code: mcsResp.status,
+                    message: mcsResp.data,
+                };
+            } else {
+                //@ts-ignore
+                response.base = {
+                    code: 0,
+                    data: mcsResp.data,
+                };
+            }
         } else {
+            let code = response.status === 200 ? 0 : response.status;
             //@ts-ignore
             response.base = {
-                code: 0,
-                data: mcsResp.data
+                code: code,
+                data: code === 0 ? response.data : undefined,
             };
+            //@ts-ignore
+            response.ct = ct;
         }
         //@ts-ignore
         response.response = response;
@@ -164,21 +317,26 @@ axios.interceptors.response.use(
     },
     (error) => {
         if (!error.message && !error.response) {
+            if (error.codes === "ECONNREFUSED") {
+                vscode.window.showErrorMessage(
+                    `服务器不在线 ${Config.urlPrefix}`
+                );
+            }
             //client error
             return {
                 base: {
                     code: -1,
-                    message: `client error ${error.code}`
+                    message: `client error ${error.code}`,
                 },
-                error: error
+                error: error,
             };
         } else if (error.message && !error.response) {
             return {
                 base: {
                     code: -1,
-                    message: error.message
+                    message: error.message,
                 },
-                error: error
+                error: error,
             };
         } else {
             const body = error.response.data;
@@ -186,19 +344,19 @@ axios.interceptors.response.use(
                 return {
                     base: {
                         code: body.status,
-                        message: JSON.stringify(body)
+                        message: JSON.stringify(body),
                     },
                     error: error,
-                    status: error.response.status
+                    status: error.response.status,
                 };
             }
             return {
                 base: {
                     code: -1,
-                    message: `${error.code} ${body}`
+                    message: `${error.code} ${body}`,
                 },
                 error: error,
-                status: error.response.status
+                status: error.response.status,
             };
         }
     }

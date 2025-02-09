@@ -8,6 +8,12 @@ import {
     getFileList,
     getFileContent,
     updateFileContent,
+    deleteFiles,
+    createFile,
+    createDir,
+    getFileConfig,
+    uploadFile,
+    downloadFile,
 } from "../api/mcs";
 import { mergeCookie, removeCookie } from "../utils/cookie";
 import {
@@ -26,8 +32,120 @@ import {
     MCSInstance,
 } from "../types";
 import path from "path";
+import fs from "fs";
 
 export class McsService {
+    public async downloadFile({
+        daemonId,
+        uuid,
+        filepath,
+        distpath,
+    }: {
+        daemonId: string;
+        uuid: string;
+        filepath: string;
+        distpath: string;
+    }): Promise<void> {
+        const resp = await getFileConfig({
+            daemonId,
+            uuid,
+            fileName: filepath,
+        });
+        if (resp.base.code !== 0) {
+            throw Error(`获取文件配置失败 ${JSON.stringify(resp.base)}`);
+        }
+        const resp2 = await downloadFile({
+            ...resp.base.data!,
+            downloadFilename: path.basename(filepath),
+        });
+        if (resp2.base.code !== 0) {
+            throw Error(`下载文件失败 ${JSON.stringify(resp2.base)}`);
+        }
+        fs.writeFileSync(distpath, resp2.base.data!);
+    }
+    public async uploadFile({
+        daemonId,
+        uuid,
+        uploadDir,
+        filepath,
+    }: {
+        daemonId: string;
+        uuid: string;
+        uploadDir: string;
+        filepath: string;
+    }): Promise<void> {
+        const resp = await getFileConfig({ daemonId, uuid, uploadDir });
+        if (resp.base.code !== 0) {
+            throw Error(`获取文件配置失败 ${JSON.stringify(resp.base)}`);
+        }
+        const resp2 = await uploadFile({
+            ...resp.base.data!,
+            file: fs.createReadStream(filepath),
+        });
+        if (resp2.base.code !== 0) {
+            throw Error(`上传文件失败 ${JSON.stringify(resp2.base)}`);
+        }
+    }
+    public async mkFile({
+        isDir,
+        ...params
+    }: {
+        isDir: boolean;
+        daemonId: string;
+        uuid: string;
+        target: string;
+    }): Promise<boolean> {
+        if (isDir) {
+            return this.createDir(params);
+        } else {
+            return this.createFile(params);
+        }
+    }
+    public async createDir({
+        daemonId,
+        uuid,
+        target,
+    }: {
+        daemonId: string;
+        uuid: string;
+        target: string;
+    }): Promise<boolean> {
+        const resp = await createDir({ daemonId, uuid, target });
+        if (resp.base.code !== 0) {
+            throw Error(`删除目录内容失败 ${JSON.stringify(resp.base)}`);
+        }
+        return resp.base.data!;
+    }
+    public async createFile({
+        daemonId,
+        uuid,
+        target,
+    }: {
+        daemonId: string;
+        uuid: string;
+        target: string;
+    }): Promise<boolean> {
+        const resp = await createFile({ daemonId, uuid, target });
+        if (resp.base.code !== 0) {
+            throw Error(`创建文件失败 ${JSON.stringify(resp.base)}`);
+        }
+        return resp.base.data!;
+    }
+    public async deleteFiles({
+        daemonId,
+        uuid,
+        targets,
+    }: {
+        daemonId: string;
+        uuid: string;
+        targets: string[];
+    }): Promise<boolean> {
+        const resp = await deleteFiles({ daemonId, uuid, targets });
+        if (resp.base.code !== 0) {
+            throw Error(`删除文件失败 ${JSON.stringify(resp.base)}`);
+        }
+        return resp.base.data!;
+    }
     public async updateFileContent(
         daemonId: string,
         uuid: string,
@@ -38,24 +156,27 @@ export class McsService {
         if (resp.base.code !== 0) {
             throw Error(`更新文件内容失败 ${JSON.stringify(resp.base)}`);
         }
-        return resp.base.data || false;
+        return resp.base.data!;
     }
 
     public async getFileContent(
         daemonId: string,
         uuid: string,
         target: string
-    ): Promise<string | boolean | undefined> {
+    ): Promise<string> {
         const resp = await getFileContent({ daemonId, uuid, target });
         if (resp.base.code !== 0) {
             throw Error(`获取文件内容失败 ${JSON.stringify(resp.base)}`);
         }
-        return resp.base.data;
+        if (resp.base.data! === true) {
+            return "";
+        }
+        return resp.base.data as string;
     }
 
     public async getAllFileList(
         params: MCSFileListReq
-    ): Promise<PageResp<MCSFileItem> | undefined> {
+    ): Promise<PageResp<MCSFileItem>> {
         const fileItems: MCSFileItem[] = [];
         for (let i = 0; true; i++) {
             params.page = i;
@@ -92,7 +213,7 @@ export class McsService {
     }
     public async getFileList(
         params: MCSFileListReq
-    ): Promise<MCSFileListPageResp | undefined> {
+    ): Promise<MCSFileListPageResp> {
         const resp = await getFileList(params);
         if (resp.base.code !== 0) {
             throw Error(`获取文件列表失败 ${JSON.stringify(resp.base)}`);
@@ -122,12 +243,12 @@ export class McsService {
         const resp = await getLoginUser();
         return resp.status !== 403;
     }
-    public async getLoginUser(): Promise<MCSLoginUser | undefined> {
+    public async getLoginUser(): Promise<MCSLoginUser> {
         const resp = await getLoginUser();
         if (resp.base.code !== 0) {
             throw Error(`获取登录用户信息失败 ${JSON.stringify(resp.base)}`);
         }
-        return resp.base.data;
+        return resp.base.data!;
     }
 
     public async autoLogin(): Promise<void> {
@@ -178,10 +299,6 @@ export class McsService {
             mergeCookie(cookies, oldCookie)
         );
         const loginUser = await this.getLoginUser();
-        if (!loginUser) {
-            await this.removeLoginCookie();
-            throw Error("登录成功，但是无法获取用户信息");
-        }
         await GlobalVar.context.globalState.update(
             STATE_LOGIN_COOKIE,
             cookies.map((cookie) => cookie.split("; ")[0])

@@ -21,10 +21,6 @@ export class MCSTextDocumentContentProvider
             uuid,
             uri.path
         );
-        if (content === true) {
-            return "";
-        }
-
-        return content || "";
+        return content;
     }
 }

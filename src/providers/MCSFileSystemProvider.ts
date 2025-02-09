@@ -43,11 +43,6 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             uuid,
             uri.path
         );
-
-        if (!content || typeof content !== "string") {
-            throw Error(`Failed to get file content: ${uri.path}`);
-        }
-
         return new TextEncoder().encode(content);
     }
 

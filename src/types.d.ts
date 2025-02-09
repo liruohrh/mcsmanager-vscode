@@ -119,3 +119,8 @@ export interface MCSFileListReq {
     target: string;
     fileName?: string;
 }
+
+export interface MCSFileConfig {
+    password: string;
+    addr: string;
+}

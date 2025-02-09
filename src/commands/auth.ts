@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
 import { MCSFileTreeDataProvider } from "@/view/file/provider";
 import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
+import axios from "axios";
 
 export const COMMAND_LOGIN = "mcsManager.login";
 export const COMMAND_LOGOUT = "mcsManager.logout";
@@ -21,6 +22,12 @@ export async function loginCommand(
     fileTreeDataProvider: MCSFileTreeDataProvider,
     instanceTreeDataProvider: MCSInstanceTreeDataProvider
 ) {
+    if (GlobalVar.isSigningIn) {
+        GlobalVar.outputChannel.info(
+            "Command[login]: 正在登录中，请稍后执行登录"
+        );
+        return;
+    }
     const isLogin = await GlobalVar.mcsService.isLogin2();
     await GlobalVar.mcsService.login();
     await fileTreeDataProvider.refresh();

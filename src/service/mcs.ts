@@ -278,34 +278,47 @@ export class McsService {
         if (!Config.username || !Config.username) {
             throw Error(`登录失败，请配置登录凭证`);
         }
-
-        if (await this.isLogin2()) {
-            await this.logout();
+        if (GlobalVar.isSigningIn) {
+            return;
         }
+        GlobalVar.isSigningIn = true;
 
-        const resp = await login({
-            username: Config.username,
-            password: Config.password,
-        });
+        try {
+            if (await this.isLogin2()) {
+                await this.logout();
+            }
 
-        if (resp.base.code !== 0) {
-            throw Error(`登录失败，请检查配置 ${JSON.stringify(resp.base)}`);
+            const resp = await login({
+                username: Config.username,
+                password: Config.password,
+            });
+
+            if (resp.base.code !== 0) {
+                throw Error(
+                    `登录失败，请检查配置 ${JSON.stringify(resp.base)}`
+                );
+            }
+            const cookies = resp.response!.headers["set-cookie"]!;
+            const oldCookie =
+                GlobalVar.context.globalState.get<string>(STATE_COOKIE) || "";
+            await GlobalVar.context.globalState.update(
+                STATE_COOKIE,
+                mergeCookie(cookies, oldCookie)
+            );
+            const loginUser = await this.getLoginUser();
+            await GlobalVar.context.globalState.update(
+                STATE_LOGIN_COOKIE,
+                cookies.map((cookie) => cookie.split("; ")[0])
+            );
+            await GlobalVar.context.globalState.update(
+                STATE_TOKEN,
+                resp.base.data
+            );
+            await this.onLogin(loginUser);
+            GlobalVar.outputChannel.info("登录成功");
+        } finally {
+            GlobalVar.isSigningIn = false;
         }
-        const cookies = resp.response!.headers["set-cookie"]!;
-        const oldCookie =
-            GlobalVar.context.globalState.get<string>(STATE_COOKIE) || "";
-        await GlobalVar.context.globalState.update(
-            STATE_COOKIE,
-            mergeCookie(cookies, oldCookie)
-        );
-        const loginUser = await this.getLoginUser();
-        await GlobalVar.context.globalState.update(
-            STATE_LOGIN_COOKIE,
-            cookies.map((cookie) => cookie.split("; ")[0])
-        );
-        await GlobalVar.context.globalState.update(STATE_TOKEN, resp.base.data);
-        await this.onLogin(loginUser);
-        GlobalVar.outputChannel.info("登录成功");
     }
     public async onLogin(loginUser: MCSLoginUser): Promise<void> {
         GlobalVar.loginUser = loginUser;

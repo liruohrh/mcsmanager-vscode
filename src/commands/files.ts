@@ -208,23 +208,6 @@ export async function openFileCommand(
         throw Error("require instance");
     }
 
-    // 检查是否是文本文件
-    if (!isTextFile(fileItem.path)) {
-        const result = await vscode.window.showWarningMessage(
-            `此文件类型无法直接查看。是否需要下载？`,
-            "是",
-            "否"
-        );
-
-        if (result === "是") {
-            await vscode.commands.executeCommand(
-                COMMAND_DOWNLOAD_FILE,
-                fileItem
-            );
-        }
-        return;
-    }
-
     // 创建mcs scheme的URI
     const uri = vscode.Uri.parse(
         buildMCSUrl({
@@ -233,10 +216,9 @@ export async function openFileCommand(
             uuid: instance.instanceUuid,
         })
     );
-
-    // 打开文档
-    const doc = await vscode.workspace.openTextDocument(uri);
-    await vscode.window.showTextDocument(doc, {
+    //vscode.TextDocumentShowOptions
+    vscode.commands.executeCommand("vscode.open", uri, {
+        viewColumn: vscode.ViewColumn.Active,
         preview: false,
     });
 }

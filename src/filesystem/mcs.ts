@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
+import { isTextFile } from "@/utils/mcs";
 
 export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
@@ -38,6 +39,14 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             throw Error("require daemonId or uuid");
         }
 
+        if (!isTextFile(uri.path)) {
+            const buffer = await GlobalVar.mcsService.downloadFile({
+                daemonId,
+                uuid,
+                filepath: uri.path,
+            });
+            return buffer!;
+        }
         const content = await GlobalVar.mcsService.getFileContent(
             daemonId,
             uuid,

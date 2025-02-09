@@ -116,8 +116,8 @@ export class McsService {
         daemonId: string;
         uuid: string;
         filepath: string;
-        distpath: string;
-    }): Promise<void> {
+        distpath?: string;
+    }): Promise<Uint8Array | undefined> {
         const resp = await getFileConfig({
             daemonId,
             uuid,
@@ -133,7 +133,11 @@ export class McsService {
         if (resp2.base.code !== 0) {
             throw Error(`下载文件失败 ${JSON.stringify(resp2.base)}`);
         }
-        fs.writeFileSync(distpath, resp2.base.data!);
+        if (distpath) {
+            fs.writeFileSync(distpath, resp2.base.data!);
+            return;
+        }
+        return resp2.base.data!;
     }
     public async uploadFile({
         daemonId,

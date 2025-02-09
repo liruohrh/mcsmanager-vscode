@@ -1,27 +1,18 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
-import { MCSFileTreeDataProvider } from "@/view/file/provider";
-import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
-import axios from "axios";
 
 export const COMMAND_LOGIN = "mcsManager.login";
 export const COMMAND_LOGOUT = "mcsManager.logout";
 export const COMMAND_OPEN_CONFIG = "mcsManager.openConfig";
 
-export async function logoutCommand(
-    fileTreeDataProvider: MCSFileTreeDataProvider,
-    instanceTreeDataProvider: MCSInstanceTreeDataProvider
-) {
+export async function logoutCommand() {
     await GlobalVar.mcsService.logout();
-    await fileTreeDataProvider.refresh();
-    await instanceTreeDataProvider.refresh();
+    GlobalVar.fileTreeDataProvider.refresh();
+    GlobalVar.instanceTreeDataProvider.refresh();
     vscode.window.showInformationMessage(`登出成功`);
 }
 
-export async function loginCommand(
-    fileTreeDataProvider: MCSFileTreeDataProvider,
-    instanceTreeDataProvider: MCSInstanceTreeDataProvider
-) {
+export async function loginCommand() {
     if (GlobalVar.isSigningIn) {
         GlobalVar.outputChannel.info(
             "Command[login]: 正在登录中，请稍后执行登录"
@@ -30,8 +21,8 @@ export async function loginCommand(
     }
     const isLogin = await GlobalVar.mcsService.isLogin2();
     await GlobalVar.mcsService.login();
-    await fileTreeDataProvider.refresh();
-    await instanceTreeDataProvider.refresh();
+    GlobalVar.fileTreeDataProvider.refresh();
+    GlobalVar.instanceTreeDataProvider.refresh();
     vscode.window.showInformationMessage(`${isLogin ? "重新" : ""}登录成功`);
 }
 

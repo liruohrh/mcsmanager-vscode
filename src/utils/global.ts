@@ -6,6 +6,7 @@ import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
 
 export class GlobalVar {
     static instanceTreeDataProvider: MCSInstanceTreeDataProvider;
+    static mcsFileExplorer: vscode.TreeView<MCSFileItem>;
     static fileTreeDataProvider: MCSFileTreeDataProvider;
     static isSigningIn = false;
     static loginUser?: MCSLoginUser;

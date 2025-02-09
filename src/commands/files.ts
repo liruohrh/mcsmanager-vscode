@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { MCSFileItem, MCSInstance } from "@/types";
 import { buildMCSUrl, isDirectory, isTextFile } from "@/utils/mcs";
-import { MCSFileTreeDataProvider } from "@/view/file/provider";
 import { GlobalVar } from "@/utils/global";
 import path from "path";
 export const COMMAND_UPLOAD_FILE_TO_ROOT = "mcsManager.uploadFileToRoot";
@@ -17,13 +16,7 @@ export const COMMAND_REFRESH_FILE_ROOT = "mcsManager.refreshFileRoot";
 export const COMMAND_REFRESH_FILES = "mcsManager.refreshFiles";
 export const COMMAND_OPEN_FILE = "mcsManager.openFile";
 
-export async function uploadFileCommand({
-    element,
-    fileTreeDataProvider,
-}: {
-    element?: MCSFileItem;
-    fileTreeDataProvider: MCSFileTreeDataProvider;
-}) {
+export async function uploadFileCommand(element?: MCSFileItem) {
     if (element && !isDirectory(element)) {
         vscode.window.showErrorMessage(`${element.path} 不是目录, 无法上传`);
         return;
@@ -47,17 +40,13 @@ export async function uploadFileCommand({
         uploadDir: element ? element.path : "/",
         filepath: filepath,
     });
-    fileTreeDataProvider.refresh(element);
+    GlobalVar.fileTreeDataProvider.refresh(element);
     vscode.window.showInformationMessage(
         `成功上传文件 ${filepath} 到 ${uploadDir}`
     );
 }
 
-export async function downloadFileCommand({
-    element,
-}: {
-    element: MCSFileItem;
-}) {
+export async function downloadFileCommand(element: MCSFileItem) {
     if (isDirectory(element)) {
         vscode.window.showErrorMessage(`暂时只支持下载文件`);
         return;
@@ -86,11 +75,9 @@ export async function downloadFileCommand({
 export async function createFileCommand({
     isDir = false,
     element,
-    fileTreeDataProvider,
 }: {
     isDir?: boolean;
     element?: MCSFileItem;
-    fileTreeDataProvider: MCSFileTreeDataProvider;
 }) {
     const text = isDir ? "目录" : "文件";
     if (element && !isDirectory(element)) {
@@ -123,19 +110,11 @@ export async function createFileCommand({
         return;
     }
     vscode.window.showInformationMessage(`创建${text} ${filepath} 成功`);
-    fileTreeDataProvider.refresh(element);
+    GlobalVar.fileTreeDataProvider.refresh(element);
 }
 
-export async function deleteFilesCommand({
-    element,
-    mcsFileExplorer,
-    fileTreeDataProvider,
-}: {
-    element?: MCSFileItem;
-    mcsFileExplorer?: vscode.TreeView<MCSFileItem>;
-    fileTreeDataProvider: MCSFileTreeDataProvider;
-}) {
-    const els = element ? [element] : mcsFileExplorer!.selection;
+export async function deleteFilesCommand(element?: MCSFileItem) {
+    const els = element ? [element] : GlobalVar.mcsFileExplorer!.selection;
     if (els.length === 0) {
         await vscode.window.showWarningMessage("要删除文件，请先选中文件");
         return;
@@ -156,7 +135,7 @@ export async function deleteFilesCommand({
         uuid: currentInstance.instanceUuid,
         targets: els.map((e) => e.path),
     });
-    fileTreeDataProvider.refresh();
+    GlobalVar.fileTreeDataProvider.refresh();
     vscode.window.showInformationMessage(`成功删除文件${els.length} 个文件`);
     GlobalVar.outputChannel.info(
         `成功删除文件 ${els.length} 个文件, \n\t${els
@@ -164,21 +143,13 @@ export async function deleteFilesCommand({
             .join("\n\t")}`
     );
 }
-export function refreshFileRootCommand(
-    treeDataProvider: MCSFileTreeDataProvider
-) {
-    treeDataProvider.refresh();
+export function refreshFileRootCommand() {
+    GlobalVar.fileTreeDataProvider.refresh();
     GlobalVar.outputChannel.info("Files Root");
 }
 
-export function refreshFilesCommand(
-    element: MCSFileItem,
-    treeDataProvider: MCSFileTreeDataProvider
-) {
-    //不知道为什么选择后一直处于选中状态，导致按treeview的菜单对item操作有问题。
-    // 刷新就只能是就刷新根目录，除非弄另一个命令。
-    // 因此就不实现批量刷新了
-    treeDataProvider.refresh(element);
+export function refreshFilesCommand(element: MCSFileItem) {
+    GlobalVar.fileTreeDataProvider.refresh(element);
     GlobalVar.outputChannel.info(`Files view refreshed`, element.path);
 }
 

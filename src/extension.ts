@@ -96,6 +96,7 @@ async function afterLogin() {
             dragAndDropController: new MCsFileTreeViewDragDropController(),
         }
     );
+    GlobalVar.mcsFileExplorer = mcsFileExplorer;
     context.subscriptions.push(mcsFileExplorer);
 
     // 注册命令
@@ -106,60 +107,48 @@ async function afterLogin() {
 
     // 登录相关
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_LOGIN, () => {
-            loginCommand(fileTreeDataProvider, instanceTreeDataProvider);
-        })
+        vscode.commands.registerCommand(COMMAND_LOGIN, loginCommand)
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_LOGOUT, () => {
-            logoutCommand(fileTreeDataProvider, instanceTreeDataProvider);
-        })
+        vscode.commands.registerCommand(COMMAND_LOGOUT, logoutCommand)
     );
 
     // 实例
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_SELECT_INSTANCE, (instance) => {
-            selectInstanceCommand(
-                fileTreeDataProvider,
-                instanceTreeDataProvider,
-                instance
-            );
-        })
+        vscode.commands.registerCommand(
+            COMMAND_SELECT_INSTANCE,
+            selectInstanceCommand
+        )
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_REFRESH_INSTANCES, () => {
-            refreshInstancesCommand(
-                fileTreeDataProvider,
-                instanceTreeDataProvider
-            );
-        })
+        vscode.commands.registerCommand(
+            COMMAND_REFRESH_INSTANCES,
+            refreshInstancesCommand
+        )
     );
 
     // 文件
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_UPLOAD_FILE_TO_ROOT, () => {
-            uploadFileCommand({ fileTreeDataProvider });
-        })
+        vscode.commands.registerCommand(
+            COMMAND_UPLOAD_FILE_TO_ROOT,
+            uploadFileCommand
+        )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_UPLOAD_FILE, (element) => {
-            uploadFileCommand({ element, fileTreeDataProvider });
-        })
+        vscode.commands.registerCommand(COMMAND_UPLOAD_FILE, uploadFileCommand)
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_DOWNLOAD_FILE, (element) => {
-            downloadFileCommand({
-                element,
-            });
-        })
+        vscode.commands.registerCommand(
+            COMMAND_DOWNLOAD_FILE,
+            downloadFileCommand
+        )
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand(COMMAND_CREATE_DIR_IN_ROOT, () => {
             createFileCommand({
                 isDir: true,
-                fileTreeDataProvider,
             });
         })
     );
@@ -168,58 +157,52 @@ async function afterLogin() {
             createFileCommand({
                 isDir: true,
                 element,
-                fileTreeDataProvider,
             });
         })
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(COMMAND_CREATE_FILE_IN_ROOT, () => {
-            createFileCommand({
-                fileTreeDataProvider,
-            });
+            createFileCommand({});
         })
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(COMMAND_CREATE_FILE, (element) => {
             createFileCommand({
                 element,
-                fileTreeDataProvider,
             });
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_BATCH_DELETE_FILES, () => {
-            deleteFilesCommand({
-                mcsFileExplorer,
-                fileTreeDataProvider,
-            });
-        })
+        vscode.commands.registerCommand(
+            COMMAND_BATCH_DELETE_FILES,
+            deleteFilesCommand
+        )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_DELETE_FILES, (element) => {
-            deleteFilesCommand({
-                element,
-                fileTreeDataProvider,
-            });
-        })
+        vscode.commands.registerCommand(
+            COMMAND_DELETE_FILES,
+            deleteFilesCommand
+        )
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_REFRESH_FILE_ROOT, () => {
-            refreshFileRootCommand(fileTreeDataProvider);
-        })
+        vscode.commands.registerCommand(
+            COMMAND_REFRESH_FILE_ROOT,
+            refreshFileRootCommand
+        )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_REFRESH_FILES, (element) => {
-            refreshFilesCommand(element, fileTreeDataProvider);
-        })
+        vscode.commands.registerCommand(
+            COMMAND_REFRESH_FILES,
+            refreshFilesCommand
+        )
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand(COMMAND_OPEN_FILE, openFileCommand)
     );
 
-    GlobalVar.outputChannel.info("插件已激活");
+    GlobalVar.outputChannel.info("MCSManager is activated");
 }
 
 export function deactivate() {

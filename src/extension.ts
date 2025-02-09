@@ -40,6 +40,7 @@ import {
     openConfigCommand,
 } from "./commands/auth";
 import { MCSFileItem } from "./types";
+import { MCsFileTreeViewDragDropController } from "./view/file/DragDropController";
 
 export function activate(context: vscode.ExtensionContext) {
     GlobalVar.context = context;
@@ -77,6 +78,7 @@ async function afterLogin() {
 
     // 实例视图
     const instanceTreeDataProvider = new MCSInstanceTreeDataProvider();
+    GlobalVar.instanceTreeDataProvider = instanceTreeDataProvider;
     vscode.window.registerTreeDataProvider(
         "mcsInstanceExplorer",
         instanceTreeDataProvider
@@ -84,12 +86,14 @@ async function afterLogin() {
 
     // 文件视图
     const fileTreeDataProvider = new MCSFileTreeDataProvider();
+    GlobalVar.fileTreeDataProvider = fileTreeDataProvider;
     const mcsFileExplorer = vscode.window.createTreeView<MCSFileItem>(
         "mcsFileExplorer",
         {
             treeDataProvider: fileTreeDataProvider,
             canSelectMany: true,
             showCollapseAll: true,
+            dragAndDropController: new MCsFileTreeViewDragDropController(),
         }
     );
     context.subscriptions.push(mcsFileExplorer);

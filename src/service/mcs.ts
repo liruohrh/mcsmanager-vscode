@@ -16,6 +16,7 @@ import {
     getFileConfig,
     uploadFile,
     downloadFile,
+    moveFile,
 } from "@/api/mcs";
 import { mergeCookie, removeCookie } from "@/utils/cookie";
 import {
@@ -33,8 +34,51 @@ import {
     PageResp,
     MCSInstance,
 } from "@/types";
+import { isDirectory } from "@/utils/mcs";
 
 export class McsService {
+    public async moveFile(
+        sources: MCSFileItem[],
+        targetDir: MCSFileItem
+    ): Promise<void> {
+        if (!targetDir || sources.length === 0 || !GlobalVar.currentInstance) {
+            return;
+        }
+        let dirPath = targetDir.path;
+        if (
+            !isDirectory(targetDir) &&
+            (sources.length > 1 || path.dirname(sources[0].path) !== dirPath)
+        ) {
+            dirPath = path.dirname(targetDir.path);
+            const result = await vscode.window.showErrorMessage(
+                `Can't move multiple files to a file, Whether to change target dir ${targetDir.path} to ${dirPath}`,
+                "Yes",
+                "No"
+            );
+            if (result !== "Yes") {
+                return;
+            }
+        }
+        const targets: string[][] = [];
+        for (const item of sources) {
+            targets.push([
+                item.path,
+                path.join(dirPath, path.basename(item.path)),
+            ]);
+        }
+        const resp = await moveFile({
+            daemonId: GlobalVar.currentInstance.daemonId,
+            uuid: GlobalVar.currentInstance.instanceUuid,
+            targets,
+        });
+        if (resp.base.code !== 0) {
+            throw Error(`移动文件失败 ${JSON.stringify(resp.base)}`);
+        }
+        GlobalVar.fileTreeDataProvider.refresh();
+        vscode.window.showInformationMessage("Move success");
+        GlobalVar.outputChannel.info("Move Files success", targets);
+    }
+
     public async downloadFile({
         daemonId,
         uuid,

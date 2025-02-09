@@ -13,6 +13,32 @@ import {
 } from "@/types";
 import { STATE_COOKIE } from "@/utils/constant";
 
+export async function moveFile({
+    daemonId,
+    uuid,
+    targets,
+}: {
+    daemonId: string;
+    uuid: string;
+    targets: string[][];
+}): Promise<APIResp<boolean>> {
+    return axios.put(
+        `/api/files/move`,
+        {
+            targets,
+        },
+        {
+            params: {
+                daemonId,
+                uuid,
+            },
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+            },
+        }
+    );
+}
+
 export async function downloadFile({
     password,
     addr,

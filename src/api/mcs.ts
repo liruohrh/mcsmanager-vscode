@@ -285,7 +285,8 @@ axios.interceptors.request.use((request) => {
 axios.interceptors.response.use(
     (response) => {
         const ct = response.headers["content-type"]?.toString();
-        if (ct?.includes("json")) {
+        //mcs api 基本都响应text/plain，因此判断data是否是一个对象比较合适
+        if (ct?.includes("json") || response.data instanceof Object) {
             const mcsResp = response.data;
             if (mcsResp.status !== 200) {
                 //@ts-ignore

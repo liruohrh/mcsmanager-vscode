@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
-import { GlobalVar } from "../utils/global";
-import { MCSFileItem, MCSLoginUser, MCSInstance } from "../types";
+import { GlobalVar } from "@/utils/global";
+import { MCSFileItem, MCSLoginUser, MCSInstance } from "@//types";
 import {
     isDirectory,
     formatFileSize,
     formatDateTime,
     buildMCSUrl,
-} from "../utils/mcs";
-import { COMMAND_OPEN_FILE } from "../commands/files";
+} from "@/utils/mcs";
+import { COMMAND_OPEN_FILE } from "@/commands/files";
 
 export class MCSFileTreeDataProvider
     implements vscode.TreeDataProvider<MCSFileItem>

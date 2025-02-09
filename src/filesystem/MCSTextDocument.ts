@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { GlobalVar } from "../utils/global";
+import { GlobalVar } from "@/utils/global";
 
 export class MCSTextDocumentContentProvider
     implements vscode.TextDocumentContentProvider

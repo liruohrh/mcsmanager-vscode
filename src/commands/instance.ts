@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { GlobalVar } from "../utils/global";
-import { MCSInstance } from "../types";
-import { MCSInstanceTreeDataProvider } from "../providers/MCSInstanceTreeDataProvider";
-import { MCSFileTreeDataProvider } from "../providers/MCSFileTreeDataProvider";
-import { STATE_SELECTED_INSTANCE } from "../utils/constant";
+import { GlobalVar } from "@/utils/global";
+import { MCSInstance } from "@/types";
+import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
+import { MCSFileTreeDataProvider } from "@/view/file/provider";
+import { STATE_SELECTED_INSTANCE } from "@/utils/constant";
 
 export const COMMAND_REFRESH_INSTANCES = "mcsManager.refreshInstances";
 export const COMMAND_SELECT_INSTANCE = "mcsManager.selectInstance";

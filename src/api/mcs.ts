@@ -1,18 +1,17 @@
-import { Config } from "../utils/config";
-import { GlobalVar } from "../utils/global";
+import fs from "fs";
+import * as vscode from "vscode";
+import FormData from "form-data";
+import axiosG from "axios";
+import { Config } from "@/utils/config";
+import { GlobalVar } from "@/utils/global";
 import {
     APIResp,
     MCSLoginUser,
     MCSFileListPageResp,
     MCSFileListReq,
     MCSFileConfig,
-} from "../types";
-import axiosG, { AxiosHeaders } from "axios";
-import { STATE_COOKIE } from "../utils/constant";
-import fs from "fs";
-import path from "path";
-import * as vscode from "vscode";
-import FormData from "form-data";
+} from "@/types";
+import { STATE_COOKIE } from "@/utils/constant";
 
 export async function downloadFile({
     password,

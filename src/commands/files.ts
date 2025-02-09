@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { MCSFileItem, MCSInstance } from "../types";
-import { buildMCSUrl, isDirectory, isTextFile } from "../utils/mcs";
-import { MCSFileTreeDataProvider } from "../providers/MCSFileTreeDataProvider";
-import { GlobalVar } from "../utils/global";
+import { MCSFileItem, MCSInstance } from "@/types";
+import { buildMCSUrl, isDirectory, isTextFile } from "@/utils/mcs";
+import { MCSFileTreeDataProvider } from "@/view/file/provider";
+import { GlobalVar } from "@/utils/global";
 import path from "path";
 export const COMMAND_UPLOAD_FILE_TO_ROOT = "mcsManager.uploadFileToRoot";
 export const COMMAND_UPLOAD_FILE = "mcsManager.uploadFile";

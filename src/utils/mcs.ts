@@ -1,5 +1,5 @@
-import { MCSFileItem } from "../types";
-import { GlobalVar } from "./global";
+import { MCSFileItem } from "@/types";
+import { GlobalVar } from "@/utils/global";
 
 export function buildMCSUrl({
     daemonId,

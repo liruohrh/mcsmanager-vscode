@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ServiceConfig } from "../types";
+import { ServiceConfig } from "@/types";
 
 export const getConfig = () => vscode.workspace.getConfiguration("mcsManager");
 

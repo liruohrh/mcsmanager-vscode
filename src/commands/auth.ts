@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { GlobalVar } from "../utils/global";
-import { MCSFileTreeDataProvider } from "../providers/MCSFileTreeDataProvider";
-import { MCSInstanceTreeDataProvider } from "../providers/MCSInstanceTreeDataProvider";
+import { GlobalVar } from "@/utils/global";
+import { MCSFileTreeDataProvider } from "@/view/file/provider";
+import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
 
 export const COMMAND_LOGIN = "mcsManager.login";
 export const COMMAND_LOGOUT = "mcsManager.logout";

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { GlobalVar } from "../utils/global";
+import { GlobalVar } from "@/utils/global";
 
 export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();

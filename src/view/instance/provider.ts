@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { GlobalVar } from "../utils/global";
-import { MCSInstance } from "../types";
-import { COMMAND_SELECT_INSTANCE } from "../commands/instance";
+import { GlobalVar } from "@/utils/global";
+import { MCSInstance } from "@/types";
+import { COMMAND_SELECT_INSTANCE } from "@/commands/instance";
 
 export class MCSInstanceTreeDataProvider
     implements vscode.TreeDataProvider<MCSInstance>
@@ -33,7 +33,7 @@ export class MCSInstanceTreeDataProvider
         treeItem.command = {
             command: COMMAND_SELECT_INSTANCE,
             title: "Select Instance",
-            arguments: [element]
+            arguments: [element],
         };
         return treeItem;
     }

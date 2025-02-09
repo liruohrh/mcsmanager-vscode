@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { MCSFileTreeDataProvider } from "./providers/MCSFileTreeDataProvider";
-import { MCSFileSystemProvider } from "./providers/MCSFileSystemProvider";
-import { MCSInstanceTreeDataProvider } from "./providers/MCSInstanceTreeDataProvider";
-import { McsService } from "./service/mcs";
-import { GlobalVar } from "./utils/global";
+import { MCSFileTreeDataProvider } from "@/view/file/provider";
+import { MCSFileSystemProvider } from "@/filesystem/mcs";
+import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
+import { McsService } from "@/service/mcs";
+import { GlobalVar } from "@/utils/global";
 import {
     COMMAND_DELETE_FILES,
     COMMAND_OPEN_FILE,

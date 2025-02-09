@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { McsService } from "../service/mcs";
-import { MCSFileItem, MCSInstance, MCSLoginUser } from "../types";
+import { McsService } from "@/service/mcs";
+import { MCSFileItem, MCSInstance, MCSLoginUser } from "@/types";
 
 export class GlobalVar {
     static loginUser?: MCSLoginUser;

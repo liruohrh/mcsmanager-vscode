@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
-import { GlobalVar } from "../utils/global";
-import { Config } from "../utils/config";
+import path from "path";
+import fs from "fs";
+import { GlobalVar } from "@/utils/global";
+import { Config } from "@/utils/config";
 import {
     getUserInfo as getLoginUser,
     login,
@@ -14,15 +16,15 @@ import {
     getFileConfig,
     uploadFile,
     downloadFile,
-} from "../api/mcs";
-import { mergeCookie, removeCookie } from "../utils/cookie";
+} from "@/api/mcs";
+import { mergeCookie, removeCookie } from "@/utils/cookie";
 import {
     STATE_COOKIE,
     STATE_LOGIN_COOKIE,
     STATE_LOGIN_USER,
     STATE_TOKEN,
     STATE_SELECTED_INSTANCE,
-} from "../utils/constant";
+} from "@/utils/constant";
 import {
     MCSLoginUser,
     MCSFileListPageResp,
@@ -30,9 +32,7 @@ import {
     MCSFileItem,
     PageResp,
     MCSInstance,
-} from "../types";
-import path from "path";
-import fs from "fs";
+} from "@/types";
 
 export class McsService {
     public async downloadFile({

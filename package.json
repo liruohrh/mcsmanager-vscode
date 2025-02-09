@@ -41,6 +41,12 @@
         },
         "commands": [
             {
+                "command": "mcsManager.renameFile",
+                "title": "Rename File",
+                "category": "MCSManager",
+                "icon": "$(edit)"
+            },
+            {
                 "command": "mcsManager.downloadFile",
                 "title": "Download File",
                 "category": "MCSManager",
@@ -228,9 +234,14 @@
                     "group": "inline@5"
                 },
                 {
+                    "command": "mcsManager.renameFile",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "group": "inline@6"
+                },
+                {
                     "command": "mcsManager.refreshFiles",
                     "when": "view == mcsFileExplorer  && viewItem == folder && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "inline@6"
+                    "group": "inline@7"
                 }
             ]
         },

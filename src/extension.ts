@@ -1,9 +1,11 @@
 import * as vscode from "vscode";
 import { MCSFileTreeDataProvider } from "@/view/file/provider";
+import { MCsFileTreeViewDragDropController } from "@/view/file/DragDropController";
 import { MCSFileSystemProvider } from "@/filesystem/mcs";
 import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
 import { McsService } from "@/service/mcs";
 import { GlobalVar } from "@/utils/global";
+import { MCSFileItem } from "@/types";
 import {
     COMMAND_DELETE_FILES,
     COMMAND_OPEN_FILE,
@@ -24,13 +26,15 @@ import {
     COMMAND_UPLOAD_FILE,
     uploadFileCommand,
     COMMAND_UPLOAD_FILE_TO_ROOT,
-} from "./commands/files";
+    COMMAND_RENAME_FILE,
+    renameFileCommand,
+} from "@/commands/files";
 import {
     COMMAND_REFRESH_INSTANCES,
     COMMAND_SELECT_INSTANCE,
     refreshInstancesCommand,
     selectInstanceCommand,
-} from "./commands/instance";
+} from "@/commands/instance";
 import {
     COMMAND_LOGIN,
     COMMAND_LOGOUT,
@@ -38,9 +42,7 @@ import {
     loginCommand,
     logoutCommand,
     openConfigCommand,
-} from "./commands/auth";
-import { MCSFileItem } from "./types";
-import { MCsFileTreeViewDragDropController } from "./view/file/DragDropController";
+} from "@/commands/auth";
 
 export function activate(context: vscode.ExtensionContext) {
     GlobalVar.context = context;
@@ -129,6 +131,10 @@ async function afterLogin() {
     );
 
     // 文件
+    context.subscriptions.push(
+        vscode.commands.registerCommand(COMMAND_RENAME_FILE, renameFileCommand)
+    );
+
     context.subscriptions.push(
         vscode.commands.registerCommand(
             COMMAND_UPLOAD_FILE_TO_ROOT,

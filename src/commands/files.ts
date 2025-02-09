@@ -3,6 +3,7 @@ import { MCSFileItem, MCSInstance } from "@/types";
 import { buildMCSUrl, isDirectory, isTextFile } from "@/utils/mcs";
 import { GlobalVar } from "@/utils/global";
 import path from "path";
+export const COMMAND_RENAME_FILE = "mcsManager.renameFile";
 export const COMMAND_UPLOAD_FILE_TO_ROOT = "mcsManager.uploadFileToRoot";
 export const COMMAND_UPLOAD_FILE = "mcsManager.uploadFile";
 export const COMMAND_DOWNLOAD_FILE = "mcsManager.downloadFile";
@@ -15,6 +16,15 @@ export const COMMAND_DELETE_FILES = "mcsManager.deleteFiles";
 export const COMMAND_REFRESH_FILE_ROOT = "mcsManager.refreshFileRoot";
 export const COMMAND_REFRESH_FILES = "mcsManager.refreshFiles";
 export const COMMAND_OPEN_FILE = "mcsManager.openFile";
+
+export async function renameFileCommand(element: MCSFileItem) {
+    const newName = await vscode.window.showInputBox({
+        title: "new name",
+    });
+    if (newName) {
+        GlobalVar.mcsService.renameFile(element.path, newName);
+    }
+}
 
 export async function uploadFileCommand(element?: MCSFileItem) {
     if (element && !isDirectory(element)) {

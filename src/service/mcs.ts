@@ -37,6 +37,34 @@ import {
 import { isDirectory } from "@/utils/mcs";
 
 export class McsService {
+    public async renameFile(filepath: string, newName: string): Promise<void> {
+        if (!GlobalVar.currentInstance) {
+            return;
+        }
+        const filename = path.basename(filepath);
+        if (filename === newName) {
+            vscode.window.showWarningMessage(
+                `new name(${newName}) is equal old name${filename}`
+            );
+            return;
+        }
+        const newPath = path.join(path.dirname(filepath), newName);
+        const resp = await moveFile({
+            daemonId: GlobalVar.currentInstance.daemonId,
+            uuid: GlobalVar.currentInstance.instanceUuid,
+            targets: [[filepath, newPath]],
+        });
+        if (resp.base.code !== 0) {
+            throw Error(
+                `fail to rename file ${filepath} to ${newPath} ${JSON.stringify(
+                    resp.base
+                )}`
+            );
+        }
+        GlobalVar.fileTreeDataProvider.refresh();
+        vscode.window.showInformationMessage("Rename File success");
+    }
+
     public async moveFile(
         sources: MCSFileItem[],
         targetDir: MCSFileItem
@@ -72,7 +100,7 @@ export class McsService {
             targets,
         });
         if (resp.base.code !== 0) {
-            throw Error(`移动文件失败 ${JSON.stringify(resp.base)}`);
+            throw Error(`fail to move file ${JSON.stringify(resp.base)}`);
         }
         GlobalVar.fileTreeDataProvider.refresh();
         vscode.window.showInformationMessage("Move success");

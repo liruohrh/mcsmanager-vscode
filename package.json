@@ -29,12 +29,12 @@
             "mcsManager": [
                 {
                     "id": "mcsInstanceExplorer",
-                    "name": "Instances",
+                    "name": "Instance Explorer",
                     "type": "tree"
                 },
                 {
                     "id": "mcsFileExplorer",
-                    "name": "Files",
+                    "name": "File Explorer",
                     "type": "tree"
                 }
             ]

@@ -89,6 +89,7 @@ async function afterLogin() {
         {
             treeDataProvider: fileTreeDataProvider,
             canSelectMany: true,
+            showCollapseAll: true,
         }
     );
     context.subscriptions.push(mcsFileExplorer);

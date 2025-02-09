@@ -28,6 +28,8 @@ import {
     COMMAND_UPLOAD_FILE_TO_ROOT,
     COMMAND_RENAME_FILE,
     renameFileCommand,
+    COMMAND_UPLOAD_EDITOR_DOCUMENTS,
+    uploadEditorDocumentsCommand,
 } from "@/commands/files";
 import {
     COMMAND_REFRESH_INSTANCES,
@@ -135,6 +137,12 @@ async function afterLogin() {
         vscode.commands.registerCommand(COMMAND_RENAME_FILE, renameFileCommand)
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            COMMAND_UPLOAD_EDITOR_DOCUMENTS,
+            uploadEditorDocumentsCommand
+        )
+    );
     context.subscriptions.push(
         vscode.commands.registerCommand(
             COMMAND_UPLOAD_FILE_TO_ROOT,

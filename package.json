@@ -41,6 +41,12 @@
         },
         "commands": [
             {
+                "command": "mcsManager.uploadEditorDocuments",
+                "title": "Upload Editor Documents",
+                "category": "MCSManager",
+                "icon": "$(arrow-up)"
+            },
+            {
                 "command": "mcsManager.renameFile",
                 "title": "Rename File",
                 "category": "MCSManager",
@@ -160,6 +166,13 @@
             }
         ],
         "menus": {
+            "editor/title": [
+                {
+                    "command": "mcsManager.uploadEditorDocuments",
+                    "when": "mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "group": "navigation"
+                }
+            ],
             "view/title": [
                 {
                     "command": "mcsManager.login",

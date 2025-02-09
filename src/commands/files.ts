@@ -3,6 +3,8 @@ import { MCSFileItem, MCSInstance } from "@/types";
 import { buildMCSUrl, isDirectory, isTextFile } from "@/utils/mcs";
 import { GlobalVar } from "@/utils/global";
 import path from "path";
+export const COMMAND_UPLOAD_EDITOR_DOCUMENTS =
+    "mcsManager.uploadEditorDocuments";
 export const COMMAND_RENAME_FILE = "mcsManager.renameFile";
 export const COMMAND_UPLOAD_FILE_TO_ROOT = "mcsManager.uploadFileToRoot";
 export const COMMAND_UPLOAD_FILE = "mcsManager.uploadFile";
@@ -16,6 +18,41 @@ export const COMMAND_DELETE_FILES = "mcsManager.deleteFiles";
 export const COMMAND_REFRESH_FILE_ROOT = "mcsManager.refreshFileRoot";
 export const COMMAND_REFRESH_FILES = "mcsManager.refreshFiles";
 export const COMMAND_OPEN_FILE = "mcsManager.openFile";
+
+/**
+ * 指定目录（可以事先选中）
+ */
+export async function uploadEditorDocumentsCommand(uri: vscode.Uri) {
+    if (!GlobalVar.currentInstance) {
+        vscode.window.showErrorMessage("has not select instance");
+        return;
+    }
+    const filepath = uri.fsPath;
+    const result = await vscode.window.showQuickPick(
+        [
+            "/",
+            ...GlobalVar.mcsFileExplorer.selection
+                .filter(isDirectory)
+                .map((e) => e.path),
+        ],
+        {
+            title: "select a dir to upload",
+        }
+    );
+    if (!result) {
+        return;
+    }
+    await GlobalVar.mcsService.uploadFile({
+        daemonId: GlobalVar.currentInstance.daemonId,
+        uuid: GlobalVar.currentInstance.instanceUuid,
+        uploadDir: result,
+        filepath: filepath,
+    });
+    GlobalVar.fileTreeDataProvider.refresh();
+    vscode.window.showInformationMessage(
+        `successfully upload ${filepath} to ${result}`
+    );
+}
 
 export async function renameFileCommand(element: MCSFileItem) {
     const newName = await vscode.window.showInputBox({

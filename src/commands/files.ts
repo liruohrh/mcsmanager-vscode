@@ -77,9 +77,10 @@ export async function renameFileCommand(element: MCSFileItem) {
     const newName = await vscode.window.showInputBox({
         title: "new name",
     });
-    if (newName) {
-        GlobalVar.mcsService.renameFile(element.path, newName);
+    if (!newName) {
+        return;
     }
+    GlobalVar.mcsService.renameFile(element.path, newName);
 }
 
 export async function uploadFileCommand(element?: MCSFileItem) {
@@ -186,7 +187,7 @@ export async function deleteFilesCommand(element?: MCSFileItem) {
         "Yes",
         "No"
     );
-    if (result === "No") {
+    if (result !== "Yes") {
         return;
     }
     const currentInstance = GlobalVar.currentInstance!;
@@ -222,10 +223,10 @@ export async function openFileCommand(
             "Yes",
             "No"
         );
-        if (result === "Yes") {
-            await downloadFileCommand(fileItem);
+        if (result !== "Yes") {
+            return;
         }
-        return;
+        await downloadFileCommand(fileItem);
     }
     // 创建mcs scheme的URI
     const uri = vscode.Uri.parse(

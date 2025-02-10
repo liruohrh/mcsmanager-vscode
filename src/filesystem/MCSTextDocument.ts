@@ -8,19 +8,7 @@ export class MCSTextDocumentContentProvider
     onDidChange = this._onDidChange.event;
 
     async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
-        const params = new URLSearchParams(uri.query);
-        const daemonId = params.get("daemonId");
-        const uuid = params.get("uuid");
-
-        if (!daemonId || !uuid) {
-            throw new Error("Missing required parameters");
-        }
-
-        const content = await GlobalVar.mcsService.getFileContent(
-            daemonId,
-            uuid,
-            uri.path
-        );
+        const content = await GlobalVar.mcsService.getFileContent(uri.path);
         return content;
     }
 }

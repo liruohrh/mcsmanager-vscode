@@ -112,8 +112,8 @@ export interface MCSFileListPageResp extends MCSPageResp<MCSFileItem> {
 }
 
 export interface MCSFileListReq {
-    daemonId: string;
-    uuid: string;
+    daemonId?: string;
+    uuid?: string;
     page?: number;
     pageSize?: number;
     target: string;

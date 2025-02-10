@@ -3,10 +3,11 @@ import { GlobalVar } from "@/utils/global";
 import { MCSFileItem, MCSLoginUser, MCSInstance } from "@//types";
 import {
     isDirectory,
-    formatFileSize,
     formatDateTime,
     buildMCSUrl,
+    fromMCSDatetime,
 } from "@/utils/mcs";
+import { formatFileSize } from "@/utils/file";
 import { COMMAND_OPEN_FILE } from "@/commands/files";
 
 export class MCSFileTreeDataProvider
@@ -40,6 +41,9 @@ export class MCSFileTreeDataProvider
         // 以resourceUri构建TreeItem也行，自动推断label
         treeItem.resourceUri = vscode.Uri.parse(
             buildMCSUrl({
+                isDir: isDir,
+                mtime: fromMCSDatetime(element.time).getTime(),
+                size: element.size,
                 path: element.path,
             })
         );
@@ -75,12 +79,14 @@ export class MCSFileTreeDataProvider
 
         const currentPath = element ? element.path : "/";
 
-        const fileList = await GlobalVar.mcsService.getAllFileList({
+        const page = await GlobalVar.mcsService.getAllFileList({
             daemonId: GlobalVar.currentInstance.daemonId,
             uuid: GlobalVar.currentInstance.instanceUuid,
             target: currentPath,
         });
 
-        return fileList?.data || [];
+        await GlobalVar.fileSystemProvider._setEntries(currentPath, page.data!);
+
+        return page.data!;
     }
 }

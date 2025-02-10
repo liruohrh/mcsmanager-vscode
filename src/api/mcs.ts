@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import * as vscode from "vscode";
 import FormData from "form-data";
 import axiosG from "axios";
@@ -55,15 +56,28 @@ export async function uploadFile({
     password,
     addr,
     file,
-}: MCSFileConfig & { file: fs.ReadStream }): Promise<APIResp<string>> {
+    filepath,
+}: MCSFileConfig & {
+    file?: fs.ReadStream | Uint8Array;
+    filepath: string;
+}): Promise<APIResp<string>> {
     const formData = new FormData();
-    formData.append("file", file);
+    let options;
+    if (file) {
+        options = {
+            filename: path.posix.basename(filepath),
+        };
+    } else {
+        file = fs.createReadStream(filepath);
+    }
+    formData.append("file", file, options);
     return axios.post(`/upload/${password}`, formData, {
         baseURL: `${
             Config.urlPrefix.startsWith("https") ? "https" : "http"
         }://${addr}/`,
         headers: {
             ...formData.getHeaders(),
+            "Content-Type": "multipart/form-data",
         },
     });
 }
@@ -315,25 +329,20 @@ axios.interceptors.response.use(
             (ct?.includes("json") || response.data instanceof Object)
         ) {
             const mcsResp = response.data;
-            if (mcsResp.status !== 200) {
-                //@ts-ignore
-                response.base = {
-                    code: mcsResp.status,
-                    message: mcsResp.data,
-                };
-            } else {
-                //@ts-ignore
-                response.base = {
-                    code: 0,
-                    data: mcsResp.data,
-                };
-            }
+            let code = mcsResp.status === 200 ? 0 : mcsResp.status;
+            //@ts-ignore
+            response.base = {
+                code: code,
+                data: code === 0 ? mcsResp.data : undefined,
+                message: code !== 0 ? mcsResp.data : undefined,
+            };
         } else {
             let code = response.status === 200 ? 0 : response.status;
             //@ts-ignore
             response.base = {
                 code: code,
                 data: code === 0 ? response.data : undefined,
+                message: code !== 0 ? response.data : undefined,
             };
             //@ts-ignore
             response.ct = ct;

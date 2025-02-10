@@ -1,8 +1,11 @@
 import * as vscode from "vscode";
 import { MCSFileItem, MCSInstance } from "@/types";
-import { buildMCSUrl, isDirectory, isTextFile } from "@/utils/mcs";
+import { buildMCSUrl, fromMCSDatetime, isDirectory } from "@/utils/mcs";
 import { GlobalVar } from "@/utils/global";
 import path from "path";
+import { isCompressedFile } from "@/utils/file";
+
+export const COMMAND_OPEN_AS_WS = "mcsManager.openAsWS";
 export const COMMAND_UPLOAD_EDITOR_DOCUMENTS =
     "mcsManager.uploadEditorDocuments";
 export const COMMAND_RENAME_FILE = "mcsManager.renameFile";
@@ -18,6 +21,24 @@ export const COMMAND_DELETE_FILES = "mcsManager.deleteFiles";
 export const COMMAND_REFRESH_FILE_ROOT = "mcsManager.refreshFileRoot";
 export const COMMAND_REFRESH_FILES = "mcsManager.refreshFiles";
 export const COMMAND_OPEN_FILE = "mcsManager.openFile";
+
+export async function openAsWSCommand() {
+    if (!GlobalVar.currentInstance) {
+        return;
+    }
+    const uri = vscode.Uri.parse(
+        buildMCSUrl({
+            daemonId: GlobalVar.currentInstance.daemonId,
+            uuid: GlobalVar.currentInstance.instanceUuid,
+            isDir: true,
+            path: "/",
+        })
+    );
+    vscode.commands.executeCommand("vscode.openFolder", uri, {
+        forceNewWindow: false,
+        profile: "default",
+    });
+}
 
 /**
  * 指定目录（可以事先选中）
@@ -43,8 +64,6 @@ export async function uploadEditorDocumentsCommand(uri: vscode.Uri) {
         return;
     }
     await GlobalVar.mcsService.uploadFile({
-        daemonId: GlobalVar.currentInstance.daemonId,
-        uuid: GlobalVar.currentInstance.instanceUuid,
         uploadDir: result,
         filepath: filepath,
     });
@@ -82,8 +101,6 @@ export async function uploadFileCommand(element?: MCSFileItem) {
     const filepath = fileUri[0].fsPath;
     const uploadDir = element ? element.path : "/";
     await GlobalVar.mcsService.uploadFile({
-        daemonId: GlobalVar.currentInstance!.daemonId,
-        uuid: GlobalVar.currentInstance!.instanceUuid,
         uploadDir: element ? element.path : "/",
         filepath: filepath,
     });
@@ -109,8 +126,6 @@ export async function downloadFileCommand(element: MCSFileItem) {
     }
     const distpath = distUri.fsPath;
     await GlobalVar.mcsService.downloadFile({
-        daemonId: GlobalVar.currentInstance!.daemonId,
-        uuid: GlobalVar.currentInstance!.instanceUuid,
         filepath: element.path,
         distpath: distUri.fsPath,
     });
@@ -148,8 +163,6 @@ export async function createFileCommand({
         : `/${name}`;
     const result = await GlobalVar.mcsService.mkFile({
         isDir: isDir,
-        daemonId: GlobalVar.currentInstance!.daemonId,
-        uuid: GlobalVar.currentInstance!.instanceUuid,
         target: filepath,
     });
     if (!result) {
@@ -177,11 +190,7 @@ export async function deleteFilesCommand(element?: MCSFileItem) {
         return;
     }
     const currentInstance = GlobalVar.currentInstance!;
-    await GlobalVar.mcsService.deleteFiles({
-        daemonId: currentInstance.daemonId,
-        uuid: currentInstance.instanceUuid,
-        targets: els.map((e) => e.path),
-    });
+    await GlobalVar.mcsService.deleteFiles(els.map((e) => e.path));
     GlobalVar.fileTreeDataProvider.refresh();
     vscode.window.showInformationMessage(`成功删除文件${els.length} 个文件`);
     GlobalVar.outputChannel.info(
@@ -207,12 +216,25 @@ export async function openFileCommand(
     if (!instance) {
         throw Error("require instance");
     }
-
+    if (isCompressedFile(fileItem.name)) {
+        const result = await vscode.window.showWarningMessage(
+            `${fileItem.name} is compress file. Do you want to download?`,
+            "Yes",
+            "No"
+        );
+        if (result === "Yes") {
+            await downloadFileCommand(fileItem);
+        }
+        return;
+    }
     // 创建mcs scheme的URI
     const uri = vscode.Uri.parse(
         buildMCSUrl({
             path: fileItem.path,
             daemonId: instance.daemonId,
+            isDir: isDirectory(fileItem),
+            mtime: fromMCSDatetime(fileItem.time).getTime(),
+            size: fileItem.size,
             uuid: instance.instanceUuid,
         })
     );

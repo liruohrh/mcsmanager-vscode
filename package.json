@@ -41,6 +41,12 @@
         },
         "commands": [
             {
+                "command": "mcsManager.openAsWS",
+                "title": "Open As Workspace",
+                "category": "MCSManager",
+                "icon": "$(arrow-right)"
+            },
+            {
                 "command": "mcsManager.uploadEditorDocuments",
                 "title": "Upload Editor Documents",
                 "category": "MCSManager",
@@ -218,6 +224,11 @@
                     "command": "mcsManager.refreshFileRoot",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
                     "group": "navigation@5"
+                },
+                {
+                    "command": "mcsManager.openAsWS",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "group": "navigation@6"
                 }
             ],
             "view/item/context": [

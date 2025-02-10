@@ -30,6 +30,8 @@ import {
     renameFileCommand,
     COMMAND_UPLOAD_EDITOR_DOCUMENTS,
     uploadEditorDocumentsCommand,
+    COMMAND_OPEN_AS_WS,
+    openAsWSCommand,
 } from "@/commands/files";
 import {
     COMMAND_REFRESH_INSTANCES,
@@ -71,6 +73,7 @@ async function afterLogin() {
     const context = GlobalVar.context;
     // 注册MCS文件系统提供者
     const fileSystemProvider = new MCSFileSystemProvider();
+    GlobalVar.fileSystemProvider = fileSystemProvider;
     context.subscriptions.push(
         vscode.workspace.registerFileSystemProvider("mcs", fileSystemProvider, {
             isCaseSensitive: true,
@@ -133,6 +136,10 @@ async function afterLogin() {
     );
 
     // 文件
+    context.subscriptions.push(
+        vscode.commands.registerCommand(COMMAND_OPEN_AS_WS, openAsWSCommand)
+    );
+
     context.subscriptions.push(
         vscode.commands.registerCommand(COMMAND_RENAME_FILE, renameFileCommand)
     );

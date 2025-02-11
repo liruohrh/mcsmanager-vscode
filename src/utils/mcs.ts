@@ -1,6 +1,14 @@
+import * as vscode from "vscode";
 import { MCSFileItem } from "@/types";
 import { GlobalVar } from "@/utils/global";
 
+export function isInMCSWorkspace(): boolean {
+    return (
+        vscode.workspace.workspaceFolders?.some(
+            (folder) => folder.uri.scheme === "mcs"
+        ) ?? false
+    );
+}
 export function buildMCSUrl({
     daemonId,
     uuid,
@@ -8,7 +16,7 @@ export function buildMCSUrl({
     mtime = 0,
     size = 0,
     path,
-    pathOnly = false,
+    pathOnly = true,
 }: {
     daemonId?: string;
     uuid?: string;
@@ -30,7 +38,9 @@ export function buildMCSUrl({
     }
     return `mcs://${path}?daemonId=${daemonId}&uuid=${uuid}&isDir=${isDir}&mtime=${mtime}&size=${size}`;
 }
-
+export function getItemType(isDir: boolean): number {
+    return isDir ? 0 : 1;
+}
 export function isDirectory(item: MCSFileItem): boolean {
     return item.type === 0;
 }

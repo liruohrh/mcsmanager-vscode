@@ -103,6 +103,10 @@ async function afterLogin() {
             dragAndDropController: new MCsFileTreeViewDragDropController(),
         }
     );
+    mcsFileExplorer.onDidChangeVisibility((e) => {
+        //第一次显示时也执行 === 提前加载数据
+        fileSystemProvider.refresh("/");
+    });
     GlobalVar.mcsFileExplorer = mcsFileExplorer;
     context.subscriptions.push(mcsFileExplorer);
 

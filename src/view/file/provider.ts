@@ -70,23 +70,12 @@ export class MCSFileTreeDataProvider
      * 点击不会重新调用getChildren，除非onDidChangeTreeData触发
      */
     async getChildren(element?: MCSFileItem): Promise<MCSFileItem[]> {
-        if (
-            !(await GlobalVar.mcsService.isLogin2()) ||
-            !GlobalVar.currentInstance
-        ) {
+        if (!GlobalVar.currentInstance) {
             return [];
         }
-
-        const currentPath = element ? element.path : "/";
-
-        const page = await GlobalVar.mcsService.getAllFileList({
-            daemonId: GlobalVar.currentInstance.daemonId,
-            uuid: GlobalVar.currentInstance.instanceUuid,
-            target: currentPath,
-        });
-
-        await GlobalVar.fileSystemProvider._setEntries(currentPath, page.data!);
-
-        return page.data!;
+        const uri = vscode.Uri.parse(
+            buildMCSUrl({ path: element ? element.path : "/" })
+        );
+        return await GlobalVar.fileSystemProvider.readDir(uri);
     }
 }

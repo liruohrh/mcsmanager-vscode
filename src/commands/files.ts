@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import fs from "fs";
 import { MCSFileItem, MCSInstance } from "@/types";
 import { buildMCSUrl, fromMCSDatetime, isDirectory } from "@/utils/mcs";
 import { GlobalVar } from "@/utils/global";
@@ -63,11 +64,14 @@ export async function uploadEditorDocumentsCommand(uri: vscode.Uri) {
     if (!result) {
         return;
     }
-    await GlobalVar.mcsService.uploadFile({
-        uploadDir: result,
-        filepath: filepath,
-    });
-    GlobalVar.fileTreeDataProvider.refresh();
+    await GlobalVar.fileSystemProvider.write(
+        vscode.Uri.parse(
+            buildMCSUrl({
+                path: path.posix.join(result, path.posix.basename(filepath)),
+            })
+        ),
+        await vscode.workspace.fs.readFile(vscode.Uri.file(filepath))
+    );
     vscode.window.showInformationMessage(
         `successfully upload ${filepath} to ${result}`
     );
@@ -80,7 +84,18 @@ export async function renameFileCommand(element: MCSFileItem) {
     if (!newName) {
         return;
     }
-    GlobalVar.mcsService.renameFile(element.path, newName);
+    await GlobalVar.fileSystemProvider.rename(
+        vscode.Uri.parse(buildMCSUrl({ path: element.path })),
+        vscode.Uri.parse(
+            buildMCSUrl({
+                path: path.posix.join(
+                    path.posix.dirname(element.path),
+                    newName
+                ),
+            })
+        )
+    );
+    vscode.window.showInformationMessage("Rename File success");
 }
 
 export async function uploadFileCommand(element?: MCSFileItem) {
@@ -101,11 +116,14 @@ export async function uploadFileCommand(element?: MCSFileItem) {
     }
     const filepath = fileUri[0].fsPath;
     const uploadDir = element ? element.path : "/";
-    await GlobalVar.mcsService.uploadFile({
-        uploadDir: element ? element.path : "/",
-        filepath: filepath,
-    });
-    GlobalVar.fileTreeDataProvider.refresh(element);
+    await GlobalVar.fileSystemProvider.write(
+        vscode.Uri.parse(
+            buildMCSUrl({
+                path: path.posix.join(uploadDir, path.basename(filepath)),
+            })
+        ),
+        fs.readFileSync(filepath)
+    );
     vscode.window.showInformationMessage(
         `成功上传文件 ${filepath} 到 ${uploadDir}`
     );
@@ -126,10 +144,10 @@ export async function downloadFileCommand(element: MCSFileItem) {
         return;
     }
     const distpath = distUri.fsPath;
-    await GlobalVar.mcsService.downloadFile({
-        filepath: element.path,
-        distpath: distUri.fsPath,
-    });
+    const content = await GlobalVar.fileSystemProvider.readFile(
+        vscode.Uri.parse(buildMCSUrl({ path: element.path }))
+    );
+    await fs.writeFileSync(distUri.fsPath, content);
     vscode.window.showInformationMessage(
         `成功下载文件 ${element.path} 到 ${distpath}`
     );
@@ -158,20 +176,12 @@ export async function createFileCommand({
         return;
     }
     const filepath = element
-        ? path.join(element.path, name)
+        ? path.posix.join(element.path, name)
         : name.startsWith("/")
         ? name
         : `/${name}`;
-    const result = await GlobalVar.mcsService.mkFile({
-        isDir: isDir,
-        target: filepath,
-    });
-    if (!result) {
-        vscode.window.showErrorMessage(`创建${text} ${filepath} 失败`);
-        return;
-    }
+    await GlobalVar.fileSystemProvider.create(filepath, isDir);
     vscode.window.showInformationMessage(`创建${text} ${filepath} 成功`);
-    GlobalVar.fileTreeDataProvider.refresh(element);
 }
 
 export async function deleteFilesCommand(element?: MCSFileItem) {
@@ -187,12 +197,11 @@ export async function deleteFilesCommand(element?: MCSFileItem) {
         "Yes",
         "No"
     );
+
     if (result !== "Yes") {
         return;
     }
-    const currentInstance = GlobalVar.currentInstance!;
-    await GlobalVar.mcsService.deleteFiles(els.map((e) => e.path));
-    GlobalVar.fileTreeDataProvider.refresh();
+    await GlobalVar.fileSystemProvider.deleteFiles(els.map((e) => e.path));
     vscode.window.showInformationMessage(`成功删除文件${els.length} 个文件`);
     GlobalVar.outputChannel.info(
         `成功删除文件 ${els.length} 个文件, \n\t${els
@@ -201,13 +210,19 @@ export async function deleteFilesCommand(element?: MCSFileItem) {
     );
 }
 export function refreshFileRootCommand() {
-    GlobalVar.fileTreeDataProvider.refresh();
-    GlobalVar.outputChannel.info("Files Root");
+    GlobalVar.fileSystemProvider.refresh("/");
+    GlobalVar.outputChannel.info(`Success to refresh /`);
 }
 
-export function refreshFilesCommand(element: MCSFileItem) {
-    GlobalVar.fileTreeDataProvider.refresh(element);
-    GlobalVar.outputChannel.info(`Files view refreshed`, element.path);
+export function refreshFilesCommand(element: MCSFileItem | vscode.Uri) {
+    let filepath = "";
+    if (element instanceof vscode.Uri) {
+        filepath = element.path;
+    } else {
+        filepath = element.path;
+    }
+    GlobalVar.fileSystemProvider.refresh(filepath);
+    GlobalVar.outputChannel.info(`Success to refresh ${filepath}`);
 }
 
 export async function openFileCommand(

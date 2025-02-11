@@ -107,7 +107,7 @@
             },
             {
                 "command": "mcsManager.refreshFiles",
-                "title": "Refresh Files",
+                "title": "MCSManager: Refresh Files",
                 "category": "MCSManager",
                 "icon": "$(refresh)"
             },
@@ -172,6 +172,13 @@
             }
         ],
         "menus": {
+            "explorer/context": [
+                {
+                    "command": "mcsManager.refreshFiles",
+                    "when": "mcsManager.hasSelectedInstance",
+                    "group": "MCSManager@1"
+                }
+            ],
             "editor/title": [
                 {
                     "command": "mcsManager.uploadEditorDocuments",
@@ -264,7 +271,7 @@
                 },
                 {
                     "command": "mcsManager.refreshFiles",
-                    "when": "view == mcsFileExplorer  && viewItem == folder && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
                     "group": "inline@7"
                 }
             ]

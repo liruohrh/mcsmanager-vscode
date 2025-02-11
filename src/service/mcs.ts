@@ -34,79 +34,65 @@ import {
     PageResp,
     MCSInstance,
 } from "@/types";
-import { isDirectory } from "@/utils/mcs";
+import { defaultFileErrorGetter, logger } from "@/utils/log";
 
 export class McsService {
-    public async renameFile(filepath: string, newName: string): Promise<void> {
-        if (!GlobalVar.currentInstance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
+    public async moveFile(oldPath: string, newPath: string): Promise<void> {
+        const instance = this.currentInstance;
+        if (oldPath === newPath) {
+            throw logger.terror({
+                message: `Failed to rename file, newPath(${newPath}) is equal newPath(${oldPath})`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
-        const filename = path.basename(filepath);
-        if (filename === newName) {
-            vscode.window.showWarningMessage(
-                `rename fail, new name(${newName}) is equal old name(${filename})`
-            );
-            return;
-        }
-        const newPath = path.join(path.dirname(filepath), newName);
         const resp = await moveFile({
-            daemonId: GlobalVar.currentInstance.daemonId,
-            uuid: GlobalVar.currentInstance.instanceUuid,
-            targets: [[filepath, newPath]],
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
+            targets: [[oldPath, newPath]],
         });
         if (resp.base.code !== 0) {
-            throw Error(
-                `fail to rename file ${filepath} to ${newPath} ${JSON.stringify(
+            throw logger.terror({
+                message: `Failed to rename file ${oldPath} to ${newPath} ${JSON.stringify(
                     resp.base
-                )}`
-            );
+                )}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
-        GlobalVar.fileTreeDataProvider.refresh();
-        vscode.window.showInformationMessage("Rename File success");
+        GlobalVar.outputChannel.info(
+            `Success to move ${oldPath} to ${newPath}`
+        );
     }
 
-    public async moveFile(
-        sources: MCSFileItem[],
-        targetDir: MCSFileItem
+    public async moveFiles(
+        oldPaths: string[],
+        targetDirPath: string
     ): Promise<void> {
-        if (!targetDir || sources.length === 0 || !GlobalVar.currentInstance) {
+        if (oldPaths.length === 0) {
             return;
         }
-        let dirPath = targetDir.path;
-        if (
-            !isDirectory(targetDir) &&
-            (sources.length > 1 || path.dirname(sources[0].path) !== dirPath)
-        ) {
-            dirPath = path.dirname(targetDir.path);
-            const result = await vscode.window.showErrorMessage(
-                `Can't move multiple files to a file, Whether to change target dir ${targetDir.path} to ${dirPath}`,
-                "Yes",
-                "No"
-            );
-            if (result !== "Yes") {
-                return;
-            }
-        }
+        const instance = this.currentInstance;
         const targets: string[][] = [];
-        for (const item of sources) {
+        for (const oldPath of oldPaths) {
             targets.push([
-                item.path,
-                path.join(dirPath, path.basename(item.path)),
+                oldPath,
+                path.join(targetDirPath, path.basename(oldPath)),
             ]);
         }
         const resp = await moveFile({
-            daemonId: GlobalVar.currentInstance.daemonId,
-            uuid: GlobalVar.currentInstance.instanceUuid,
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
             targets,
         });
         if (resp.base.code !== 0) {
-            throw Error(`fail to move file ${JSON.stringify(resp.base)}`);
+            throw logger.terror({
+                message: `Failed to move file ${JSON.stringify(resp.base)}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
-        GlobalVar.fileTreeDataProvider.refresh();
-        vscode.window.showInformationMessage("Move success");
-        GlobalVar.outputChannel.info("Move Files success", targets);
+        GlobalVar.outputChannel.info(
+            `Success to move Files to ${targetDirPath}`,
+            targets
+        );
     }
 
     public async downloadFile({
@@ -116,12 +102,7 @@ export class McsService {
         filepath: string;
         distpath?: string;
     }): Promise<Uint8Array | undefined> {
-        const instance = GlobalVar.currentInstance;
-        if (!instance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
-        }
+        const instance = this.currentInstance;
         const daemonId = instance.daemonId;
         const uuid = instance.instanceUuid;
 
@@ -131,9 +112,12 @@ export class McsService {
             fileName: filepath,
         });
         if (resp.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `获取文件配置失败 ${JSON.stringify(resp.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to get download file config, ${JSON.stringify(
+                    resp.base
+                )}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
         let addr = resp.base.data!.addr;
         if (addr.startsWith("wss://")) {
@@ -145,20 +129,29 @@ export class McsService {
             downloadFilename: path.basename(filepath),
         });
         if (resp2.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `下载文件失败 ${JSON.stringify(resp2.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to download file, ${JSON.stringify(
+                    resp2.base
+                )}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
         if (distpath) {
             fs.writeFileSync(distpath, resp2.base.data!);
             return;
         }
+        GlobalVar.outputChannel.info(
+            `Success to  download File ${filepath}${
+                distpath ? ` to ${distpath}` : ""
+            }`
+        );
         return resp2.base.data!;
     }
 
     /**
      * 默认覆盖路径,目录不存在自动创建
      */
+    // 上传文件
     public async uploadFile({
         uploadDir,
         filepath,
@@ -168,21 +161,22 @@ export class McsService {
         filepath: string;
         content?: Uint8Array;
     }): Promise<void> {
-        const instance = GlobalVar.currentInstance;
-        if (!instance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
-        }
+        const instance = this.currentInstance;
         const daemonId = instance.daemonId;
         const uuid = instance.instanceUuid;
 
+        // 获取文件配置
         const resp = await getFileConfig({ daemonId, uuid, uploadDir });
+        // 如果获取文件配置失败，抛出错误
         if (resp.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `获取文件配置失败 ${JSON.stringify(resp.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to get upload file config, ${JSON.stringify(
+                    resp.base
+                )}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
+        // 获取文件配置中的addr
         let addr = resp.base.data!.addr;
         if (addr.startsWith("wss://")) {
             addr = addr.replace("wss://", "");
@@ -194,16 +188,20 @@ export class McsService {
             file: content,
         });
         if (resp2.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `上传文件失败 ${JSON.stringify(resp2.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to upload file, ${JSON.stringify(resp2.base)}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
+        GlobalVar.outputChannel.info(
+            `Success to upload File ${filepath} to ${uploadDir}`
+        );
     }
     public async mkFile({
-        isDir,
+        isDir = false,
         target,
     }: {
-        isDir: boolean;
+        isDir?: boolean;
         target: string;
     }): Promise<boolean> {
         if (isDir) {
@@ -213,170 +211,194 @@ export class McsService {
         }
     }
     public async createDir(target: string): Promise<boolean> {
-        const instance = GlobalVar.currentInstance;
-        if (!instance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
-        }
+        const instance = this.currentInstance;
         const daemonId = instance.daemonId;
         const uuid = instance.instanceUuid;
 
         const resp = await createDir({ daemonId, uuid, target });
         if (resp.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `创建目录失败 ${JSON.stringify(resp.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to create dir, ${JSON.stringify(resp.base)}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
+        GlobalVar.outputChannel.info(`Success to mkdir ${target}`);
         return resp.base.data!;
     }
     public async createFile(target: string): Promise<boolean> {
-        const instance = GlobalVar.currentInstance;
-        if (!instance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
-        }
-        const daemonId = instance.daemonId;
-        const uuid = instance.instanceUuid;
-        const resp = await createFile({ daemonId, uuid, target });
+        const instance = this.currentInstance;
+        const resp = await createFile({
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
+            target,
+        });
         if (resp.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `创建文件失败 ${JSON.stringify(resp.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to create file, ${JSON.stringify(resp.base)}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
+        GlobalVar.outputChannel.info(`Success to mk file ${target}`);
         return resp.base.data!;
     }
     public async deleteFiles(targets: string[]): Promise<boolean> {
-        const instance = GlobalVar.currentInstance;
-        if (!instance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
-        }
-        const daemonId = instance.daemonId;
-        const uuid = instance.instanceUuid;
+        const instance = this.currentInstance;
 
-        const resp = await deleteFiles({ daemonId, uuid, targets });
+        const resp = await deleteFiles({
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
+            targets,
+        });
         if (resp.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `删除文件失败 ${JSON.stringify(resp.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to delete file, ${JSON.stringify(resp.base)}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
+        GlobalVar.outputChannel.info(`Success to delete files`, targets);
         return resp.base.data!;
     }
     public async updateFileContent(
-        daemonId: string,
-        uuid: string,
         target: string,
         text: string
     ): Promise<boolean> {
-        const resp = await updateFileContent({ daemonId, uuid, target, text });
+        const instance = this.currentInstance;
+        const resp = await updateFileContent({
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
+            target,
+            text,
+        });
         if (resp.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `更新文件内容失败 ${JSON.stringify(resp.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to update file, ${JSON.stringify(resp.base)}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
+        GlobalVar.outputChannel.info(`Success to update ${target}`);
         return resp.base.data!;
     }
 
     public async getFileContent(target: string): Promise<string> {
-        const instance = GlobalVar.currentInstance;
-        if (!instance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
-        }
-        const daemonId = instance.daemonId;
-        const uuid = instance.instanceUuid;
-
-        const resp = await getFileContent({ daemonId, uuid, target });
+        const instance = this.currentInstance;
+        const resp = await getFileContent({
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
+            target,
+        });
         if (resp.base.code !== 0) {
-            throw new vscode.FileSystemError(
-                `获取文件内容失败 ${JSON.stringify(resp.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to  read file, ${JSON.stringify(resp.base)}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
         if (resp.base.data! === true) {
             return "";
         }
+        GlobalVar.outputChannel.info(`Success to get ${target}`);
         return resp.base.data as string;
     }
 
+    /**
+     * 避免加载多次。
+     * 1. 但是祖孙目录加载仍然一起，祖会覆盖原来的，导致孙去加载夫父。
+     * 2. 如果是父子，则子会等待父的promise
+     */
+    isGettingPathSet = new Map<string, Promise<PageResp<MCSFileItem>>>();
     public async getAllFileList(
         params: MCSFileListReq
     ): Promise<PageResp<MCSFileItem>> {
-        const instance = GlobalVar.currentInstance;
-        if (!instance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
+        const instance = this.currentInstance;
+        const isGetting = this.isGettingPathSet.get(params.target);
+        if (isGetting) {
+            return await isGetting;
         }
-        const daemonId = instance.daemonId;
-        const uuid = instance.instanceUuid;
+        const promise = Promise.resolve()
+            .then(async () => {
+                const fileItems: MCSFileItem[] = [];
+                for (let i = 0; true; i++) {
+                    params.page = i;
+                    const resp = await getFileList({
+                        daemonId: instance.daemonId,
+                        uuid: instance.instanceUuid,
+                        ...params,
+                    });
+                    if (resp.base.code !== 0) {
+                        if (
+                            resp.base.message?.includes("Illegal access path")
+                        ) {
+                            throw logger.terror({
+                                message: `Failed to get the file list for the ${
+                                    i + 1
+                                }th time, ${
+                                    resp.base.message
+                                }, ${JSON.stringify(resp.base)}`,
+                                errorGetter:
+                                    vscode.FileSystemError.FileNotFound,
+                            });
+                        }
+                        throw logger.terror({
+                            message: `Failed to get the file list for the ${
+                                i + 1
+                            }th time, ${JSON.stringify(resp.base)}`,
+                            errorGetter: defaultFileErrorGetter,
+                        });
+                    }
 
-        const fileItems: MCSFileItem[] = [];
-        for (let i = 0; true; i++) {
-            params.page = i;
-            const resp = await getFileList({ daemonId, uuid, ...params });
-            if (resp.base.code !== 0) {
-                if (resp.base.message?.includes("Illegal access path")) {
-                    throw vscode.FileSystemError.FileNotFound(
-                        resp.base.message!
-                    );
+                    // 处理每个文件项的path
+                    const items = resp.base.data!.items.map((item) => ({
+                        ...item,
+                        path: path.posix.join(params.target, item.name),
+                    }));
+                    fileItems.push(...items);
+                    if (resp.base.data?.total === fileItems.length) {
+                        GlobalVar.outputChannel.info(
+                            `Success to execute ${
+                                i + 1
+                            } times to get the file list of ${
+                                params.target
+                            }, a total of ${fileItems.length} files`
+                        );
+                        break;
+                    }
                 }
-                throw new vscode.FileSystemError(
-                    `第 ${i + 1} 次获取文件列表失败 ${JSON.stringify(
-                        resp.base
-                    )}`
-                );
-            }
-
-            // 处理每个文件项的path
-            const items = resp.base.data!.items.map((item) => ({
-                ...item,
-                path: path.posix.join(params.target, item.name),
-            }));
-            fileItems.push(...items);
-            if (resp.base.data?.total === fileItems.length) {
-                GlobalVar.outputChannel.info(
-                    `执行了 ${i + 1} 次 获取 ${params.target} 文件列表， 共 ${
-                        fileItems.length
-                    }文件`
-                );
-                break;
-            }
-        }
-        return {
-            data: fileItems,
-            total: fileItems.length,
-            page: 0,
-            pageSize: fileItems.length,
-        };
+                return {
+                    data: fileItems,
+                    total: fileItems.length,
+                    page: 0,
+                    pageSize: fileItems.length,
+                };
+            })
+            .finally(() => {
+                this.isGettingPathSet.delete(params.target);
+            });
+        this.isGettingPathSet.set(params.target, promise);
+        return promise;
     }
     public async getFileList(
         params: MCSFileListReq
     ): Promise<MCSFileListPageResp> {
-        const instance = GlobalVar.currentInstance;
-        if (!instance) {
-            throw vscode.FileSystemError.NoPermissions(
-                "require select instance"
-            );
-        }
-        const daemonId = instance.daemonId;
-        const uuid = instance.instanceUuid;
-
+        const instance = this.currentInstance;
         const resp = await getFileList({
             ...params,
-            daemonId,
-            uuid,
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
         });
         if (resp.base.code !== 0) {
             if (resp.base.message?.includes("Illegal access path")) {
-                throw vscode.FileSystemError.FileNotFound(resp.base.message!);
+                throw logger.terror({
+                    message: `Failed to get the file list, ${
+                        resp.base.message
+                    }, ${JSON.stringify(resp.base)}`,
+                    errorGetter: vscode.FileSystemError.FileNotFound,
+                });
             }
-            throw new vscode.FileSystemError(
-                `获取文件列表失败 ${JSON.stringify(resp.base)}`
-            );
+            throw logger.terror({
+                message: `Failed to get the file list, ${JSON.stringify(
+                    resp.base
+                )}`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
 
         // 处理每个文件项的path
@@ -384,7 +406,9 @@ export class McsService {
             ...item,
             path: path.posix.join(params.target, item.name),
         }));
-
+        GlobalVar.outputChannel.info(
+            `Success to get the file list of ${params.target}, a total of ${resp.base.data?.items?.length} files`
+        );
         return {
             ...resp.base.data!,
             items,
@@ -406,8 +430,13 @@ export class McsService {
     public async getLoginUser(): Promise<MCSLoginUser> {
         const resp = await getLoginUser();
         if (resp.base.code !== 0) {
-            throw Error(`获取登录用户信息失败 ${JSON.stringify(resp.base)}`);
+            throw logger.terror({
+                message: `Failed to get LoginUser, ${JSON.stringify(
+                    resp.base
+                )}`,
+            });
         }
+        GlobalVar.outputChannel.info(`Success to get LoginUser`);
         return resp.base.data!;
     }
 
@@ -423,25 +452,27 @@ export class McsService {
         if (await this.isLogin()) {
             const loginUser = await this.getLoginUser();
             await this.onLogin(loginUser!);
-            GlobalVar.outputChannel.info("autoLogin: 已登录");
+            GlobalVar.outputChannel.info(
+                "autoLogin: already login, directly get LoginUser"
+            );
             return;
         }
         await this.clearLoginData();
         await this.login();
-        GlobalVar.outputChannel.info("autoLogin: 自动登录成功");
+        GlobalVar.outputChannel.info("Success to autoLogin");
     }
 
     public async login(): Promise<void> {
-        if (!Config.urlPrefix) {
-            throw Error(`登录失败，请配置urlPrefix`);
-        }
-        if (!Config.username || !Config.username) {
-            throw Error(`登录失败，请配置登录凭证`);
-        }
         if (GlobalVar.isSigningIn) {
             return;
         }
         GlobalVar.isSigningIn = true;
+
+        if (!Config.urlPrefix || !Config.username || !Config.password) {
+            throw logger.terror({
+                message: `Failed to Login, require urlPrefix | username | password`,
+            });
+        }
 
         try {
             if (await this.isLogin2()) {
@@ -454,9 +485,9 @@ export class McsService {
             });
 
             if (resp.base.code !== 0) {
-                throw Error(
-                    `登录失败，请检查配置 ${JSON.stringify(resp.base)}`
-                );
+                throw logger.terror({
+                    message: `Failed to Login, ${JSON.stringify(resp.base)}`,
+                });
             }
             const cookies = resp.response!.headers["set-cookie"]!;
             const oldCookie =
@@ -475,7 +506,7 @@ export class McsService {
                 resp.base.data
             );
             await this.onLogin(loginUser);
-            GlobalVar.outputChannel.info("登录成功");
+            GlobalVar.outputChannel.info("Success to Login");
         } finally {
             GlobalVar.isSigningIn = false;
         }
@@ -506,7 +537,7 @@ export class McsService {
                     true
                 );
                 GlobalVar.outputChannel.info(
-                    `恢复选中实例: ${instance.nickname}`
+                    `OnLogin: recover old selected instance, ${instance.nickname}`
                 );
                 return;
             }
@@ -515,17 +546,23 @@ export class McsService {
 
     public async logout(): Promise<void> {
         if (!Config.urlPrefix) {
-            throw Error(`登出失败，请配置urlPrefix`);
+            throw logger.terror({
+                message: `Failed to logout, require urlPrefix`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
         const token = GlobalVar.context.globalState.get<string>(STATE_TOKEN);
         if (!token) {
-            throw Error(`登出失败，无法获取持久化的token`);
+            throw logger.terror({
+                message: `Failed to logout, require token`,
+                errorGetter: defaultFileErrorGetter,
+            });
         }
         // 忽视错误
         await logout({ token });
         await this.clearLoginState();
         await this.clearLoginMemoState();
-        GlobalVar.outputChannel.info("logout: 登出成功");
+        GlobalVar.outputChannel.info("Success to logout");
     }
     /**
      * 开启插件时需要重新获取的、非内存变量
@@ -575,5 +612,15 @@ export class McsService {
             STATE_LOGIN_COOKIE,
             undefined
         );
+    }
+    public get currentInstance(): MCSInstance {
+        const instance = GlobalVar.currentInstance;
+        if (!instance) {
+            throw logger.terror({
+                message: "require select instance",
+                errorGetter: vscode.FileSystemError.NoPermissions,
+            });
+        }
+        return instance;
     }
 }

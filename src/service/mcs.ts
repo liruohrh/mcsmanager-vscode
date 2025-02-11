@@ -75,7 +75,7 @@ export class McsService {
         for (const oldPath of oldPaths) {
             targets.push([
                 oldPath,
-                path.join(targetDirPath, path.basename(oldPath)),
+                path.posix.join(targetDirPath, path.posix.basename(oldPath)),
             ]);
         }
         const resp = await moveFile({
@@ -126,7 +126,7 @@ export class McsService {
         const resp2 = await downloadFile({
             password: resp.base.data!.password,
             addr: addr,
-            downloadFilename: path.basename(filepath),
+            downloadFilename: path.posix.basename(filepath),
         });
         if (resp2.base.code !== 0) {
             throw logger.terror({

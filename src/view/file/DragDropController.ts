@@ -27,7 +27,7 @@ export class MCsFileTreeViewDragDropController
         }
         let targetDirPath = target.path;
         if (!target.isDir) {
-            targetDirPath = path.dirname(target.path);
+            targetDirPath = path.posix.dirname(target.path);
             const result = await vscode.window.showErrorMessage(
                 `Can't move multiple files to a file, Whether to change target dir ${target.path} to ${targetDirPath}`,
                 "Yes",
@@ -41,6 +41,5 @@ export class MCsFileTreeViewDragDropController
             this.currentDragData.map((e) => e.path),
             targetDirPath
         );
-        vscode.window.showInformationMessage("Move success");
     }
 }

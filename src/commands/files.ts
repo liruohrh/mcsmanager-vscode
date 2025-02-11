@@ -120,7 +120,7 @@ export async function uploadFileCommand(element?: Entry) {
     await GlobalVar.fileSystemProvider.write(
         vscode.Uri.parse(
             buildMCSUrl({
-                path: path.posix.join(uploadDir, path.basename(filepath)),
+                path: path.posix.join(uploadDir, path.posix.basename(filepath)),
             })
         ),
         fs.readFileSync(filepath)

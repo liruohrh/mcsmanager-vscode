@@ -1,14 +1,14 @@
 import * as vscode from "vscode";
 import { McsService } from "@/service/mcs";
-import { MCSFileItem, MCSInstance, MCSLoginUser } from "@/types";
+import { MCSInstance, MCSLoginUser } from "@/types";
 import { MCSFileTreeDataProvider } from "@/view/file/provider";
 import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
-import { MCSFileSystemProvider } from "@/filesystem/mcs";
+import { Entry, MCSFileSystemProvider } from "@/filesystem/mcs";
 
 export class GlobalVar {
     static fileSystemProvider: MCSFileSystemProvider;
     static instanceTreeDataProvider: MCSInstanceTreeDataProvider;
-    static mcsFileExplorer: vscode.TreeView<MCSFileItem>;
+    static mcsFileExplorer: vscode.TreeView<Entry>;
     static fileTreeDataProvider: MCSFileTreeDataProvider;
     static isSigningIn = false;
     static loginUser?: MCSLoginUser;

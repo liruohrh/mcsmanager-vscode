@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
 import fs from "fs";
-import { MCSFileItem, MCSInstance } from "@/types";
+import { MCSInstance } from "@/types";
 import { buildMCSUrl, fromMCSDatetime, isDirectory } from "@/utils/mcs";
 import { GlobalVar } from "@/utils/global";
 import path from "path";
 import { isCompressedFile } from "@/utils/file";
+import { Entry } from "@/filesystem/mcs";
 
 export const COMMAND_OPEN_AS_WS = "mcsManager.openAsWS";
 export const COMMAND_UPLOAD_EDITOR_DOCUMENTS =
@@ -54,7 +55,7 @@ export async function uploadEditorDocumentsCommand(uri: vscode.Uri) {
         [
             "/",
             ...GlobalVar.mcsFileExplorer.selection
-                .filter(isDirectory)
+                .filter((e) => e.isDir)
                 .map((e) => e.path),
         ],
         {
@@ -77,7 +78,7 @@ export async function uploadEditorDocumentsCommand(uri: vscode.Uri) {
     );
 }
 
-export async function renameFileCommand(element: MCSFileItem) {
+export async function renameFileCommand(element: Entry) {
     const newName = await vscode.window.showInputBox({
         title: "new name",
     });
@@ -98,8 +99,8 @@ export async function renameFileCommand(element: MCSFileItem) {
     vscode.window.showInformationMessage("Rename File success");
 }
 
-export async function uploadFileCommand(element?: MCSFileItem) {
-    if (element && !isDirectory(element)) {
+export async function uploadFileCommand(element?: Entry) {
+    if (element && !element.isDir) {
         vscode.window.showErrorMessage(`${element.path} 不是目录, 无法上传`);
         return;
     }
@@ -129,8 +130,8 @@ export async function uploadFileCommand(element?: MCSFileItem) {
     );
 }
 
-export async function downloadFileCommand(element: MCSFileItem) {
-    if (isDirectory(element)) {
+export async function downloadFileCommand(element: Entry) {
+    if (element.isDir) {
         vscode.window.showErrorMessage(`暂时只支持下载文件`);
         return;
     }
@@ -158,10 +159,10 @@ export async function createFileCommand({
     element,
 }: {
     isDir?: boolean;
-    element?: MCSFileItem;
+    element?: Entry;
 }) {
     const text = isDir ? "目录" : "文件";
-    if (element && !isDirectory(element)) {
+    if (element && !element.isDir) {
         vscode.window.showErrorMessage(
             `只能在文件夹下创建${text}, 非法路径 ${element.path}`
         );
@@ -184,7 +185,7 @@ export async function createFileCommand({
     vscode.window.showInformationMessage(`创建${text} ${filepath} 成功`);
 }
 
-export async function deleteFilesCommand(element?: MCSFileItem) {
+export async function deleteFilesCommand(element?: Entry) {
     const els = element ? [element] : GlobalVar.mcsFileExplorer!.selection;
     if (els.length === 0) {
         await vscode.window.showWarningMessage("要删除文件，请先选中文件");
@@ -209,26 +210,28 @@ export async function deleteFilesCommand(element?: MCSFileItem) {
             .join("\n\t")}`
     );
 }
-export function refreshFileRootCommand() {
+export function refreshFileRootCommand(root: Entry | vscode.Uri) {
     GlobalVar.fileSystemProvider.refresh("/");
     GlobalVar.outputChannel.info(`Success to refresh /`);
 }
 
-export function refreshFilesCommand(element: MCSFileItem | vscode.Uri) {
+export async function refreshFilesCommand(
+    element: Entry | vscode.Uri
+): Promise<void> {
     let filepath = "";
     if (element instanceof vscode.Uri) {
         filepath = element.path;
     } else {
         filepath = element.path;
     }
-    GlobalVar.fileSystemProvider.refresh(filepath);
+    await GlobalVar.fileSystemProvider.refresh(filepath);
+    if (!(element instanceof vscode.Uri)) {
+        GlobalVar.fileTreeDataProvider.refresh(element);
+    }
     GlobalVar.outputChannel.info(`Success to refresh ${filepath}`);
 }
 
-export async function openFileCommand(
-    fileItem: MCSFileItem,
-    instance: MCSInstance
-) {
+export async function openFileCommand(fileItem: Entry, instance: MCSInstance) {
     if (!instance) {
         throw Error("require instance");
     }
@@ -248,7 +251,7 @@ export async function openFileCommand(
         buildMCSUrl({
             path: fileItem.path,
             daemonId: instance.daemonId,
-            isDir: isDirectory(fileItem),
+            isDir: fileItem.isDir,
             mtime: fromMCSDatetime(fileItem.time).getTime(),
             size: fileItem.size,
             uuid: instance.instanceUuid,

@@ -7,10 +7,10 @@ import {
     isDirectory,
 } from "@/utils/mcs";
 import path from "path";
-import { MCSFileItem, PageResp } from "@/types";
+import { MCSFileItem } from "@/types";
 import { logger } from "@/utils/log";
 
-class Entry implements MCSFileItem {
+export class Entry implements MCSFileItem {
     isDir: boolean;
     entries: Map<string, Entry>;
     mtime: number;
@@ -29,12 +29,10 @@ class Entry implements MCSFileItem {
         size = 0,
         mode = 777,
         time = "",
-    }: {
+    }: Partial<Entry> & {
         filepath: string;
         isDir: boolean;
-        mtime?: number;
-        content?: Uint8Array;
-    } & Partial<Omit<MCSFileItem, "name">>) {
+    }) {
         this.name = path.posix.basename(filepath);
         this.path = filepath;
         this.isDir = isDir;
@@ -168,7 +166,52 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             for (const entry0 of this._toEntries(data.data!)) {
                 entry!.entries.set(entry0.name, entry0);
             }
+            const refreshFileTabs = vscode.window.tabGroups.all
+                .map((g) =>
+                    g.tabs.filter((e) => {
+                        if (e.input instanceof vscode.TabInputText) {
+                            return e.input.uri.path.startsWith(filepath);
+                        }
+                        return false;
+                    })
+                )
+                .flatMap((e) => e);
+            if (refreshFileTabs && refreshFileTabs.length !== 0) {
+                await vscode.window.tabGroups.close(refreshFileTabs);
+                const filepaths = refreshFileTabs.map(
+                    (e) => (e.input as vscode.TabInputText).uri.path
+                );
+                const reopenFilepaths = await vscode.window.showQuickPick(
+                    filepaths,
+                    {
+                        placeHolder: "select files to reopen",
+                        canPickMany: true,
+                    }
+                );
+                if (reopenFilepaths && reopenFilepaths.length !== 0) {
+                    for (const reopenFilepath of reopenFilepaths) {
+                        await vscode.commands.executeCommand(
+                            "vscode.open",
+                            vscode.Uri.parse(
+                                buildMCSUrl({
+                                    path: reopenFilepath,
+                                })
+                            ),
+                            {
+                                viewColumn: vscode.ViewColumn.Active,
+                                preview: false,
+                            }
+                        );
+                    }
+                }
+            }
         }
+        this._emitter.fire([
+            {
+                type: vscode.FileChangeType.Changed,
+                uri: vscode.Uri.parse(buildMCSUrl({ path: filepath })),
+            },
+        ]);
     }
 
     watch(
@@ -195,11 +238,11 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             buildMCSUrl({
                 path: e.path,
             }),
-            isDirectory(e) ? vscode.FileType.Directory : vscode.FileType.File,
+            e.isDir ? vscode.FileType.Directory : vscode.FileType.File,
         ]);
         return result;
     }
-    async readDir(uri: vscode.Uri): Promise<MCSFileItem[]> {
+    async readDir(uri: vscode.Uri): Promise<Entry[]> {
         //由于在工作区会先执行stat，stat又执行_find会自动获取文件列表。
         // 因此先找一下有没有，一遍情况下都有
         const dirEntry = await this._find({
@@ -223,7 +266,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         for (const entry of this._toEntries(data.data!)) {
             parent!.entries.set(entry.name, entry);
         }
-        return data.data!;
+        return [...parent!.entries.values()];
     }
 
     async createDirectory(uri: vscode.Uri): Promise<void> {

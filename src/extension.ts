@@ -1,11 +1,10 @@
 import * as vscode from "vscode";
 import { MCSFileTreeDataProvider } from "@/view/file/provider";
 import { MCsFileTreeViewDragDropController } from "@/view/file/DragDropController";
-import { MCSFileSystemProvider } from "@/filesystem/mcs";
+import { Entry, MCSFileSystemProvider } from "@/filesystem/mcs";
 import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
 import { McsService } from "@/service/mcs";
 import { GlobalVar } from "@/utils/global";
-import { MCSFileItem } from "@/types";
 import {
     COMMAND_DELETE_FILES,
     COMMAND_OPEN_FILE,
@@ -94,7 +93,7 @@ async function afterLogin() {
     // 文件视图
     const fileTreeDataProvider = new MCSFileTreeDataProvider();
     GlobalVar.fileTreeDataProvider = fileTreeDataProvider;
-    const mcsFileExplorer = vscode.window.createTreeView<MCSFileItem>(
+    const mcsFileExplorer = vscode.window.createTreeView<Entry>(
         "mcsFileExplorer",
         {
             treeDataProvider: fileTreeDataProvider,

@@ -1,32 +1,28 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
-import { MCSFileItem, MCSLoginUser, MCSInstance } from "@//types";
-import {
-    isDirectory,
-    formatDateTime,
-    buildMCSUrl,
-    fromMCSDatetime,
-} from "@/utils/mcs";
+import { formatDateTime, buildMCSUrl, fromMCSDatetime } from "@/utils/mcs";
 import { formatFileSize } from "@/utils/file";
 import { COMMAND_OPEN_FILE } from "@/commands/files";
+import { Entry } from "@/filesystem/mcs";
 
-export class MCSFileTreeDataProvider
-    implements vscode.TreeDataProvider<MCSFileItem>
-{
+export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
     private onDidChangeTreeDataEventEmitter: vscode.EventEmitter<
-        MCSFileItem | undefined | null | void
-    > = new vscode.EventEmitter<MCSFileItem | undefined | null | void>();
+        Entry | undefined | null | void
+    > = new vscode.EventEmitter<Entry | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<
-        MCSFileItem | undefined | null | void
+        Entry | undefined | null | void
     > = this.onDidChangeTreeDataEventEmitter.event;
 
-    refresh(element?: MCSFileItem): void {
+    /**
+     * 元素必须是同一引用，属性可以不同
+     */
+    refresh(element?: Entry): void {
         //默认更新root -> 更新所有可展开的节点
         this.onDidChangeTreeDataEventEmitter.fire(element);
     }
 
-    getTreeItem(element: MCSFileItem): vscode.TreeItem {
-        const isDir = isDirectory(element);
+    getTreeItem(element: Entry): vscode.TreeItem {
+        const isDir = element.isDir;
         const treeItem = new vscode.TreeItem(element.name);
 
         const sizeF = isDir ? "0" : formatFileSize(element.size);
@@ -69,7 +65,7 @@ export class MCSFileTreeDataProvider
     /**
      * 点击不会重新调用getChildren，除非onDidChangeTreeData触发
      */
-    async getChildren(element?: MCSFileItem): Promise<MCSFileItem[]> {
+    async getChildren(element?: Entry): Promise<Entry[]> {
         if (!GlobalVar.currentInstance) {
             return [];
         }

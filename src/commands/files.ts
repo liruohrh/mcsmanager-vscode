@@ -210,7 +210,7 @@ export async function deleteFilesCommand(element?: Entry) {
             .join("\n\t")}`
     );
 }
-export function refreshFileRootCommand(root: Entry | vscode.Uri) {
+export function refreshFileRootCommand() {
     GlobalVar.fileSystemProvider.refresh("/");
     GlobalVar.outputChannel.info(`Success to refresh /`);
 }

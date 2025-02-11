@@ -156,9 +156,8 @@ async function afterLogin() {
         )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(
-            COMMAND_UPLOAD_FILE_TO_ROOT,
-            uploadFileCommand
+        vscode.commands.registerCommand(COMMAND_UPLOAD_FILE_TO_ROOT, () =>
+            uploadFileCommand()
         )
     );
     context.subscriptions.push(
@@ -199,9 +198,8 @@ async function afterLogin() {
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(
-            COMMAND_BATCH_DELETE_FILES,
-            deleteFilesCommand
+        vscode.commands.registerCommand(COMMAND_BATCH_DELETE_FILES, () =>
+            deleteFilesCommand()
         )
     );
     context.subscriptions.push(
@@ -212,9 +210,8 @@ async function afterLogin() {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(
-            COMMAND_REFRESH_FILE_ROOT,
-            refreshFileRootCommand
+        vscode.commands.registerCommand(COMMAND_REFRESH_FILE_ROOT, () =>
+            refreshFileRootCommand()
         )
     );
     context.subscriptions.push(

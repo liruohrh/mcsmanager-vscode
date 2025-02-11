@@ -186,7 +186,7 @@ export async function createFileCommand({
 }
 
 export async function deleteFilesCommand(element?: Entry) {
-    const els = element ? [element] : GlobalVar.mcsFileExplorer!.selection;
+    const els = element ? [element] : [...GlobalVar.mcsFileExplorer!.selection];
     if (els.length === 0) {
         await vscode.window.showWarningMessage("要删除文件，请先选中文件");
         return;
@@ -202,7 +202,7 @@ export async function deleteFilesCommand(element?: Entry) {
     if (result !== "Yes") {
         return;
     }
-    await GlobalVar.fileSystemProvider.deleteFiles(els.map((e) => e.path));
+    await GlobalVar.fileSystemProvider.deleteFiles(els);
     vscode.window.showInformationMessage(`成功删除文件${els.length} 个文件`);
     GlobalVar.outputChannel.info(
         `成功删除文件 ${els.length} 个文件, \n\t${els

@@ -37,9 +37,6 @@ export class MCsFileTreeViewDragDropController
                 return;
             }
         }
-        GlobalVar.fileSystemProvider.move(
-            this.currentDragData.map((e) => e.path),
-            targetDirPath
-        );
+        GlobalVar.fileSystemProvider.move(this.currentDragData, targetDirPath);
     }
 }

@@ -381,17 +381,31 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
      * 批量删除文件会一个一个执行，非常不好，不推荐在工作区批量删除文件
      */
     async delete(uri: vscode.Uri): Promise<void> {
-        await this.deleteFiles([uri.path]);
+        await this.deleteFiles(uri.path);
     }
-    async deleteFiles(paths: string[]): Promise<void> {
+    async deleteFiles(paths: string | Entry[]): Promise<void> {
         //删除了目录，目录里的就不需要删除了
-        paths = paths.filter(
-            (p) => !paths.some((p0) => p0 !== p && p.startsWith(p0))
-        );
-        await GlobalVar.mcsService.deleteFiles(paths);
+        let paths0: string[] = [];
+        if (typeof paths === "string") {
+            paths0 = [paths];
+        } else {
+            const _paths = paths as Entry[];
+            paths0 = _paths
+                .filter(
+                    (p) =>
+                        !_paths.some(
+                            (p0) =>
+                                p0.path !== p.path &&
+                                p.path.startsWith(p0.path) &&
+                                p0.isDir
+                        )
+                )
+                .map((e) => e.path);
+        }
+        await GlobalVar.mcsService.deleteFiles(paths0);
         const changes = [];
         const now = Date.now();
-        for (const path0 of paths) {
+        for (const path0 of paths0) {
             const basename = path.posix.basename(path0);
             const parent = await this._find({
                 targetPath: path.posix.dirname(path0),
@@ -445,17 +459,25 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         GlobalVar.fileTreeDataProvider.refresh();
     }
 
-    async move(oldPaths: string[], dirPath: string): Promise<void> {
+    async move(oldPaths: Entry[], dirPath: string): Promise<void> {
         //移动了目录，目录里的就不需要移动了
-        const oldPaths0 = oldPaths.filter(
-            (p) =>
-                //不要目录一样的
-                p !== dirPath &&
-                //已经在该新目录了
-                path.posix.dirname(p) !== dirPath &&
-                //p的目录在oldPaths中
-                !oldPaths.some((p0) => p0 !== p && p.startsWith(p0))
-        );
+        const oldPaths0 = oldPaths
+            .filter(
+                (p) =>
+                    //不要目录一样的
+                    p.path !== dirPath &&
+                    //已经在该新目录了
+                    path.posix.dirname(p.path) !== dirPath &&
+                    //p的目录必须不在oldPaths中，且p0必须是文件（可能无扩展名或者扩展名有部分前缀一样）
+                    !oldPaths.some(
+                        (p0) =>
+                            p0.path !== p.path &&
+                            p.path.startsWith(p0.path) &&
+                            //允许2个文件前缀相等
+                            p0.isDir
+                    )
+            )
+            .map((e) => e.path);
         if (oldPaths0.length === 0) {
             vscode.window.showWarningMessage(
                 `has not file=${oldPaths} need to move to ${dirPath}`

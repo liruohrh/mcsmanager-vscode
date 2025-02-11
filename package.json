@@ -42,119 +42,119 @@
         "commands": [
             {
                 "command": "mcsManager.openAsWS",
-                "title": "Open As Workspace",
+                "title": "MCSM: Open As Workspace",
                 "category": "MCSManager",
                 "icon": "$(arrow-right)"
             },
             {
                 "command": "mcsManager.uploadEditorDocuments",
-                "title": "Upload Editor Documents",
+                "title": "MCSM: Upload Activate Tab File",
                 "category": "MCSManager",
                 "icon": "$(arrow-up)"
             },
             {
                 "command": "mcsManager.renameFile",
-                "title": "Rename File",
+                "title": "MCSM: Rename File",
                 "category": "MCSManager",
                 "icon": "$(edit)"
             },
             {
                 "command": "mcsManager.downloadFile",
-                "title": "Download File",
+                "title": "MCSM: Download File",
                 "category": "MCSManager",
                 "icon": "$(arrow-down)"
             },
             {
                 "command": "mcsManager.uploadFileToRoot",
-                "title": "Upload File To Root",
+                "title": "MCSM: Upload File To Root",
                 "category": "MCSManager",
                 "icon": "$(arrow-up)"
             },
             {
                 "command": "mcsManager.uploadFile",
-                "title": "Upload File",
+                "title": "MCSM: Upload File",
                 "category": "MCSManager",
                 "icon": "$(arrow-up)"
             },
             {
                 "command": "mcsManager.createDirInRoot",
-                "title": "Create Dir In Root",
+                "title": "MCSM: Create Dir In Root",
                 "category": "MCSManager",
                 "icon": "$(file-directory-create)"
             },
             {
                 "command": "mcsManager.createDir",
-                "title": "Create Dir",
+                "title": "MCSM: Create Dir",
                 "category": "MCSManager",
                 "icon": "$(file-directory-create)"
             },
             {
                 "command": "mcsManager.createFileInRoot",
-                "title": "Create File In Root",
+                "title": "MCSM: Create File In Root",
                 "category": "MCSManager",
                 "icon": "$(file-add)"
             },
             {
                 "command": "mcsManager.createFile",
-                "title": "Create File",
+                "title": "MCSM: Create File",
                 "category": "MCSManager",
                 "icon": "$(file-add)"
             },
             {
                 "command": "mcsManager.openFile",
-                "title": "Open File",
+                "title": "MCSM: Open File",
                 "category": "MCSManager"
             },
             {
                 "command": "mcsManager.refreshFiles",
-                "title": "MCSManager: Refresh Files",
+                "title": "MCSM: Refresh Files",
                 "category": "MCSManager",
                 "icon": "$(refresh)"
             },
             {
                 "command": "mcsManager.refreshFileRoot",
-                "title": "Refresh File Root",
+                "title": "MCSM: Refresh File Root",
                 "category": "MCSManager",
                 "icon": "$(refresh)"
             },
             {
                 "command": "mcsManager.deleteFiles",
-                "title": "Delete Files",
+                "title": "MCSM: Delete Files",
                 "category": "MCSManager",
                 "icon": "$(remove)"
             },
             {
                 "command": "mcsManager.batchDeleteFiles",
-                "title": "Batch Delete Files",
+                "title": "MCSM: Batch Delete Files",
                 "category": "MCSManager",
                 "icon": "$(remove)"
             },
             {
                 "command": "mcsManager.selectInstance",
-                "title": "Select Instance",
+                "title": "MCSM: Select Instance",
                 "category": "MCSManager"
             },
             {
                 "command": "mcsManager.refreshInstances",
-                "title": "Refresh Instances",
+                "title": "MCSM: Refresh Instances",
                 "category": "MCSManager",
                 "icon": "$(refresh)"
             },
             {
                 "command": "mcsManager.login",
-                "title": "Login",
+                "title": "MCSM: Login",
                 "category": "MCSManager",
                 "icon": "$(sign-in)"
             },
             {
                 "command": "mcsManager.logout",
-                "title": "Logout",
+                "title": "MCSM: Logout",
                 "category": "MCSManager",
                 "icon": "$(sign-out)"
             },
             {
                 "command": "mcsManager.openConfig",
-                "title": "Open Settings",
+                "title": "MCSM: Open Settings",
                 "category": "MCSManager",
                 "icon": "$(gear)"
             }
@@ -208,24 +208,9 @@
                     "group": "navigation@4"
                 },
                 {
-                    "command": "mcsManager.createDirInRoot",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "navigation@1"
-                },
-                {
-                    "command": "mcsManager.createFileInRoot",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "navigation@2"
-                },
-                {
                     "command": "mcsManager.batchDeleteFiles",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
                     "group": "navigation@3"
-                },
-                {
-                    "command": "mcsManager.uploadFileToRoot",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "navigation@4"
                 },
                 {
                     "command": "mcsManager.refreshFileRoot",
@@ -240,39 +225,54 @@
             ],
             "view/item/context": [
                 {
+                    "command": "mcsManager.uploadFileToRoot",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "group": "root@4"
+                },
+                {
+                    "command": "mcsManager.createDirInRoot",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "group": "root@1"
+                },
+                {
+                    "command": "mcsManager.createFileInRoot",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "group": "root@2"
+                },
+                {
                     "command": "mcsManager.createDir",
                     "when": "view == mcsFileExplorer  && viewItem == folder && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "inline@1"
+                    "group": "file@1"
                 },
                 {
                     "command": "mcsManager.createFile",
                     "when": "view == mcsFileExplorer  && viewItem == folder && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "inline@2"
+                    "group": "file@5"
                 },
                 {
                     "command": "mcsManager.deleteFiles",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "inline@3"
+                    "group": "file@10"
                 },
                 {
                     "command": "mcsManager.downloadFile",
                     "when": "view == mcsFileExplorer && viewItem == file && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "inline@4"
+                    "group": "file@15"
                 },
                 {
                     "command": "mcsManager.uploadFile",
                     "when": "view == mcsFileExplorer && viewItem == folder && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "inline@5"
+                    "group": "file@20"
                 },
                 {
                     "command": "mcsManager.renameFile",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "inline@6"
+                    "group": "file@25"
                 },
                 {
                     "command": "mcsManager.refreshFiles",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "inline@7"
+                    "group": "file@30"
                 }
             ]
         },

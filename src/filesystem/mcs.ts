@@ -121,7 +121,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         return target;
     }
 
-    async refresh(filepath: string) {
+    async refresh(filepath: string, reopen: boolean = true) {
         let entry = this.root;
         if (filepath !== "/") {
             const dirEntry = await this._find({
@@ -133,75 +133,80 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             entry.content = new TextEncoder().encode(
                 await GlobalVar.mcsService.getFileContent(entry.path)
             );
-            const refreshFileTab =
-                vscode.window.tabGroups.activeTabGroup.tabs.find((e) => {
-                    if (e.input instanceof vscode.TabInputText) {
-                        return e.input.uri.path === filepath;
+            if (reopen) {
+                const refreshFileTab =
+                    vscode.window.tabGroups.activeTabGroup.tabs.find((e) => {
+                        if (e.input instanceof vscode.TabInputText) {
+                            return e.input.uri.path === filepath;
+                        }
+                        return false;
+                    });
+                if (refreshFileTab) {
+                    const result = await vscode.window.showInformationMessage(
+                        `reopen ${filepath}?`,
+                        "Yes",
+                        "No"
+                    );
+                    if (result !== "Yes") {
+                        return;
                     }
-                    return false;
-                });
-            if (refreshFileTab) {
-                const result = await vscode.window.showInformationMessage(
-                    `reopen ${filepath}?`,
-                    "Yes",
-                    "No"
-                );
-                if (result !== "Yes") {
-                    return;
+                    await vscode.window.tabGroups.close(refreshFileTab);
+                    vscode.commands.executeCommand(
+                        "vscode.open",
+                        vscode.Uri.parse(buildMCSUrl({ path: filepath })),
+                        {
+                            viewColumn: vscode.ViewColumn.Active,
+                            preview: false,
+                        }
+                    );
                 }
-                await vscode.window.tabGroups.close(refreshFileTab);
-                vscode.commands.executeCommand(
-                    "vscode.open",
-                    vscode.Uri.parse(buildMCSUrl({ path: filepath })),
-                    {
-                        viewColumn: vscode.ViewColumn.Active,
-                        preview: false,
-                    }
-                );
             }
         } else {
             const data = await GlobalVar.mcsService.getAllFileList({
                 target: filepath,
             });
+            entry!.entries.clear();
             for (const entry0 of this._toEntries(data.data!)) {
                 entry!.entries.set(entry0.name, entry0);
             }
-            const refreshFileTabs = vscode.window.tabGroups.all
-                .map((g) =>
-                    g.tabs.filter((e) => {
-                        if (e.input instanceof vscode.TabInputText) {
-                            return e.input.uri.path.startsWith(filepath);
-                        }
-                        return false;
-                    })
-                )
-                .flatMap((e) => e);
-            if (refreshFileTabs && refreshFileTabs.length !== 0) {
-                await vscode.window.tabGroups.close(refreshFileTabs);
-                const filepaths = refreshFileTabs.map(
-                    (e) => (e.input as vscode.TabInputText).uri.path
-                );
-                const reopenFilepaths = await vscode.window.showQuickPick(
-                    filepaths,
-                    {
-                        placeHolder: "select files to reopen",
-                        canPickMany: true,
-                    }
-                );
-                if (reopenFilepaths && reopenFilepaths.length !== 0) {
-                    for (const reopenFilepath of reopenFilepaths) {
-                        await vscode.commands.executeCommand(
-                            "vscode.open",
-                            vscode.Uri.parse(
-                                buildMCSUrl({
-                                    path: reopenFilepath,
-                                })
-                            ),
-                            {
-                                viewColumn: vscode.ViewColumn.Active,
-                                preview: false,
+            if (reopen) {
+                const refreshFileTabs = vscode.window.tabGroups.all
+                    .map((g) =>
+                        g.tabs.filter((e) => {
+                            if (e.input instanceof vscode.TabInputText) {
+                                return e.input.uri.path.startsWith(filepath);
                             }
-                        );
+                            return false;
+                        })
+                    )
+                    .flatMap((e) => e);
+                if (refreshFileTabs && refreshFileTabs.length !== 0) {
+                    await vscode.window.tabGroups.close(refreshFileTabs);
+                    const filepaths = refreshFileTabs.map(
+                        (e) => (e.input as vscode.TabInputText).uri.path
+                    );
+                    const reopenFilepaths = await vscode.window.showQuickPick(
+                        filepaths,
+                        {
+                            placeHolder: "select files to reopen",
+                            canPickMany: true,
+                        }
+                    );
+                    if (reopenFilepaths && reopenFilepaths.length !== 0) {
+                        for (const reopenFilepath of reopenFilepaths) {
+                            await vscode.commands.executeCommand(
+                                "vscode.open",
+                                vscode.Uri.parse(
+                                    buildMCSUrl({
+                                        path: reopenFilepath,
+                                    })
+                                ),
+                                {
+                                    viewColumn: vscode.ViewColumn.Active,
+                                    preview: false,
+                                }
+                            );
+                        }
                     }
                 }
             }
@@ -420,6 +425,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         await GlobalVar.mcsService.moveFile(oldUri.path, newUri.path);
         const now = Date.now();
         entry!.name = newName;
+        entry!.path = newUri.path;
         entry!.mtime = now;
         oldParent!.entries.delete(entry!.name);
         oldParent!.mtime = now;
@@ -441,26 +447,35 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
 
     async move(oldPaths: string[], dirPath: string): Promise<void> {
         //移动了目录，目录里的就不需要移动了
-        oldPaths = oldPaths.filter(
+        const oldPaths0 = oldPaths.filter(
             (p) =>
+                //不要目录一样的
+                p !== dirPath &&
+                //已经在该新目录了
                 path.posix.dirname(p) !== dirPath &&
+                //p的目录在oldPaths中
                 !oldPaths.some((p0) => p0 !== p && p.startsWith(p0))
         );
-
+        if (oldPaths0.length === 0) {
+            vscode.window.showWarningMessage(
+                `has not file=${oldPaths} need to move to ${dirPath}`
+            );
+            return;
+        }
         const now = Date.now();
         const newParent = await this._find({
-            targetPath: path.posix.dirname(dirPath),
+            targetPath: dirPath,
         });
         newParent!.mtime = now;
         const oldParentMap = new Map<string, Entry>();
-        for (const oldPath of oldPaths) {
+        for (const oldPath of oldPaths0) {
             const oldParent = await this._find({
                 targetPath: path.posix.dirname(oldPath),
             });
             oldParentMap.set(oldPath, oldParent!);
         }
 
-        await GlobalVar.mcsService.moveFiles(oldPaths, dirPath);
+        await GlobalVar.mcsService.moveFiles(oldPaths0, dirPath);
 
         const newPaths: string[] = [];
         for (const [oldPath, oldParent] of oldParentMap) {
@@ -468,13 +483,14 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             newPaths.push(path.posix.join(dirPath, filename));
             const entry = oldParent!.entries.get(filename)!;
             entry!.mtime = now;
+            entry!.path = path.posix.join(newParent!.path, filename);
             oldParent.entries.delete(entry.name);
             oldParent.mtime = now;
             newParent!.entries.set(entry.name, entry!);
         }
 
         this._emitter.fire([
-            ...oldPaths.map((p) => ({
+            ...oldPaths0.map((p) => ({
                 type: vscode.FileChangeType.Deleted,
                 uri: vscode.Uri.parse(p),
             })),

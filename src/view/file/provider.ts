@@ -37,9 +37,6 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
         // 以resourceUri构建TreeItem也行，自动推断label
         treeItem.resourceUri = vscode.Uri.parse(
             buildMCSUrl({
-                isDir: isDir,
-                mtime: fromMCSDatetime(element.time).getTime(),
-                size: element.size,
                 path: element.path,
             })
         );

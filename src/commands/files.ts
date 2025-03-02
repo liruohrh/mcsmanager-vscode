@@ -30,9 +30,6 @@ export async function openAsWSCommand() {
     }
     const uri = vscode.Uri.parse(
         buildMCSUrl({
-            daemonId: GlobalVar.currentInstance.daemonId,
-            uuid: GlobalVar.currentInstance.instanceUuid,
-            isDir: true,
             path: "/",
         })
     );
@@ -250,11 +247,6 @@ export async function openFileCommand(fileItem: Entry, instance: MCSInstance) {
     const uri = vscode.Uri.parse(
         buildMCSUrl({
             path: fileItem.path,
-            daemonId: instance.daemonId,
-            isDir: fileItem.isDir,
-            mtime: fromMCSDatetime(fileItem.time).getTime(),
-            size: fileItem.size,
-            uuid: instance.instanceUuid,
         })
     );
     //vscode.TextDocumentShowOptions

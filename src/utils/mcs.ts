@@ -9,34 +9,8 @@ export function isInMCSWorkspace(): boolean {
         ) ?? false
     );
 }
-export function buildMCSUrl({
-    daemonId,
-    uuid,
-    isDir = false,
-    mtime = 0,
-    size = 0,
-    path,
-    pathOnly = true,
-}: {
-    daemonId?: string;
-    uuid?: string;
-    isDir?: boolean;
-    mtime?: number;
-    size?: number;
-    path: string;
-    pathOnly?: boolean;
-}): string {
-    if (pathOnly) {
-        return `mcs://${path}`;
-    }
-    const currentInstance = GlobalVar.currentInstance;
-    if (!daemonId) {
-        daemonId = currentInstance?.daemonId;
-    }
-    if (!uuid) {
-        uuid = currentInstance?.instanceUuid;
-    }
-    return `mcs://${path}?daemonId=${daemonId}&uuid=${uuid}&isDir=${isDir}&mtime=${mtime}&size=${size}`;
+export function buildMCSUrl({ path }: { path: string }): string {
+    return `mcs://${path}`;
 }
 export function getItemType(isDir: boolean): number {
     return isDir ? 0 : 1;

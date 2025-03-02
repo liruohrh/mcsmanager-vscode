@@ -1,11 +1,10 @@
 import * as vscode from "vscode";
 import fs from "fs";
 import { MCSInstance } from "@/types";
-import { buildMCSUrl } from "@/utils/mcs";
 import { GlobalVar } from "@/utils/global";
 import path from "path";
 import { isCompressedFile } from "@/utils/file";
-import { Entry } from "@/filesystem/mcs";
+import { Entry, MCSFileSystemProvider } from "@/filesystem/mcs";
 
 export const COMMAND_OPEN_AS_WS = "mcsManager.openAsWS";
 export const COMMAND_UPLOAD_EDITOR_DOCUMENTS =
@@ -91,15 +90,14 @@ export async function openAsWSCommand() {
     if (!GlobalVar.currentInstance) {
         return;
     }
-    const uri = vscode.Uri.parse(
-        buildMCSUrl({
-            path: "/",
-        })
+    vscode.commands.executeCommand(
+        "vscode.openFolder",
+        MCSFileSystemProvider.rootUri,
+        {
+            forceNewWindow: false,
+            profile: "default",
+        }
     );
-    vscode.commands.executeCommand("vscode.openFolder", uri, {
-        forceNewWindow: false,
-        profile: "default",
-    });
 }
 
 /**
@@ -126,11 +124,9 @@ export async function uploadEditorDocumentsCommand(uri: vscode.Uri) {
         return;
     }
     await GlobalVar.fileSystemProvider.write(
-        vscode.Uri.parse(
-            buildMCSUrl({
-                path: path.posix.join(result, path.posix.basename(filepath)),
-            })
-        ),
+        MCSFileSystemProvider.uri({
+            path: path.posix.join(result, path.posix.basename(filepath)),
+        }),
         await vscode.workspace.fs.readFile(vscode.Uri.file(filepath))
     );
     vscode.window.showInformationMessage(
@@ -157,15 +153,10 @@ export async function renameFileCommand(element?: Entry) {
         return;
     }
     await GlobalVar.fileSystemProvider.rename(
-        vscode.Uri.parse(buildMCSUrl({ path: element.path })),
-        vscode.Uri.parse(
-            buildMCSUrl({
-                path: path.posix.join(
-                    path.posix.dirname(element.path),
-                    newName
-                ),
-            })
-        )
+        element.uri,
+        MCSFileSystemProvider.uri({
+            path: path.posix.join(path.posix.dirname(element.path), newName),
+        })
     );
     vscode.window.showInformationMessage("Rename File success");
 }
@@ -189,11 +180,9 @@ export async function uploadFileCommand(element?: Entry) {
     const filepath = fileUri[0].fsPath;
     const uploadDir = element ? element.path : "/";
     await GlobalVar.fileSystemProvider.write(
-        vscode.Uri.parse(
-            buildMCSUrl({
-                path: path.posix.join(uploadDir, path.posix.basename(filepath)),
-            })
-        ),
+        MCSFileSystemProvider.uri({
+            path: path.posix.join(uploadDir, path.posix.basename(filepath)),
+        }),
         fs.readFileSync(filepath)
     );
     vscode.window.showInformationMessage(
@@ -216,9 +205,7 @@ export async function downloadFileCommand(element: Entry) {
         return;
     }
     const distpath = distUri.fsPath;
-    const content = await GlobalVar.fileSystemProvider.readFile(
-        vscode.Uri.parse(buildMCSUrl({ path: element.path }))
-    );
+    const content = await GlobalVar.fileSystemProvider.readFile(element.uri);
     await fs.writeFileSync(distUri.fsPath, content);
     vscode.window.showInformationMessage(
         `成功下载文件 ${element.path} 到 ${distpath}`
@@ -319,11 +306,7 @@ export async function openFileCommand(fileItem: Entry, instance: MCSInstance) {
         await downloadFileCommand(fileItem);
     }
     // 创建mcs scheme的URI
-    const uri = vscode.Uri.parse(
-        buildMCSUrl({
-            path: fileItem.path,
-        })
-    );
+    const uri = fileItem.uri;
     //vscode.TextDocumentShowOptions
     vscode.commands.executeCommand("vscode.open", uri, {
         viewColumn: vscode.ViewColumn.Active,

@@ -1,11 +1,6 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
-import {
-    buildMCSUrl,
-    fromMCSDatetime,
-    getItemType,
-    isDirectory,
-} from "@/utils/mcs";
+import { fromMCSDatetime, getItemType, isDirectory } from "@/utils/mcs";
 import path from "path";
 import { MCSFileItem } from "@/types";
 import { logger } from "@/utils/log";
@@ -65,6 +60,9 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             path = "/" + path;
         }
         return `mcs://${path}`;
+    }
+    static get rootUri(): vscode.Uri {
+        return vscode.Uri.parse(MCSFileSystemProvider.uriStr({ path: "/" }));
     }
     static uri({ path }: { path: string }): vscode.Uri {
         return vscode.Uri.parse(MCSFileSystemProvider.uriStr({ path }));
@@ -149,7 +147,14 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         }
         return target;
     }
-
+    async findEntryMust(targetPath: string): Promise<Entry> {
+        return (await this.findEntry({ targetPath, silent: false }))!;
+    }
+    async has(targetPath: string): Promise<boolean> {
+        return (
+            (await this.findEntry({ targetPath, silent: true })) !== undefined
+        );
+    }
     async findParent({
         targetPath,
         silent = false,
@@ -161,14 +166,14 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             targetPath: path.posix.dirname(targetPath),
         })!;
     }
+    async findParentMust(targetPath: string): Promise<Entry> {
+        return (await this.findParent({ targetPath, silent: false }))!;
+    }
 
     async refresh(filepath: string, reopen: boolean = true) {
         let entry = this.root;
         if (filepath !== "/") {
-            const entry0 = await this.findEntry({
-                targetPath: filepath,
-            });
-            entry = entry0!;
+            entry = await this.findParentMust(filepath);
         }
         if (!entry.isDir) {
             entry.content = new TextEncoder().encode(
@@ -194,7 +199,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
                     await vscode.window.tabGroups.close(refreshFileTab);
                     vscode.commands.executeCommand(
                         "vscode.open",
-                        vscode.Uri.parse(buildMCSUrl({ path: filepath })),
+                        MCSFileSystemProvider.uri({ path: filepath }),
                         {
                             viewColumn: vscode.ViewColumn.Active,
                             preview: false,
@@ -231,11 +236,9 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
                         for (const reopenFilepath of reopenFilepaths) {
                             await vscode.commands.executeCommand(
                                 "vscode.open",
-                                vscode.Uri.parse(
-                                    buildMCSUrl({
-                                        path: reopenFilepath,
-                                    })
-                                ),
+                                MCSFileSystemProvider.uri({
+                                    path: reopenFilepath,
+                                }),
                                 {
                                     viewColumn: vscode.ViewColumn.Active,
                                     preview: false,
@@ -249,7 +252,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         this._emitter.fire([
             {
                 type: vscode.FileChangeType.Changed,
-                uri: vscode.Uri.parse(buildMCSUrl({ path: filepath })),
+                uri: MCSFileSystemProvider.uri({ path: filepath }),
             },
         ]);
     }
@@ -279,7 +282,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     }
 
     async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
-        let targetFile = (await this.findEntry({ targetPath: uri.path }))!;
+        let targetFile = await this.findEntryMust(uri.path);
         return {
             type: targetFile.isDir
                 ? vscode.FileType.Directory
@@ -292,19 +295,14 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
         const data = await this.readDir(uri);
         const result: [string, vscode.FileType][] = data.map((e) => [
-            buildMCSUrl({
-                path: e.path,
-            }),
+            e.uri.toString(),
             e.isDir ? vscode.FileType.Directory : vscode.FileType.File,
         ]);
         return result;
     }
     async readDir(uri: vscode.Uri): Promise<Entry[]> {
-        const dirEntry = await this.findEntry({
-            targetPath: uri.path,
-            silent: true,
-        });
-        return Array.from(dirEntry!.entries.values());
+        const dirEntry = await this.findEntryMust(uri.path);
+        return Array.from(dirEntry.entries.values());
     }
 
     async createDirectory(uri: vscode.Uri): Promise<void> {
@@ -312,12 +310,10 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     }
 
     async create(filepath: string, isDir: boolean): Promise<void> {
+        const parent = await this.findEntryMust(path.posix.dirname(filepath));
         await GlobalVar.mcsService.mkFile({
             isDir: isDir,
             target: filepath,
-        });
-        const parent = await this.findEntry({
-            targetPath: path.posix.dirname(filepath),
         });
         const now = Date.now();
         const entry = new Entry({
@@ -326,28 +322,28 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             mtime: now,
             content: new TextEncoder().encode(""),
         });
-        parent!.mtime = now;
-        parent!.entries.set(entry.name, entry);
+        parent.mtime = now;
+        parent.entries.set(entry.name, entry);
         this._sortEntries(parent!);
         this._emitter.fire([
             {
                 type: vscode.FileChangeType.Created,
-                uri: vscode.Uri.parse(filepath),
+                uri: MCSFileSystemProvider.uri({ path: filepath }),
             },
         ]);
         GlobalVar.fileTreeDataProvider.refresh();
     }
 
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-        const target = await this.findEntry({ targetPath: uri.path });
-        if (target?.content) {
+        const target = await this.findEntryMust(uri.path);
+        if (target.content) {
             return target.content;
         }
         const buffer = await GlobalVar.mcsService.downloadFile({
             filepath: uri.path,
         });
-        target!.content = buffer!;
-        return buffer!;
+        target.content = buffer!;
+        return target.content;
     }
 
     async writeFile(
@@ -355,10 +351,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         content: Uint8Array,
         options: { create: boolean; overwrite: boolean }
     ): Promise<void> {
-        if (
-            content.length === 0 &&
-            !(await this.findEntry({ targetPath: uri.path, silent: true }))
-        ) {
+        if (content.length === 0 && (await this.has(uri.path))) {
             await this.create(uri.path, false);
             return;
         }
@@ -370,11 +363,9 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         options?: { create: boolean; overwrite: boolean }
     ) {
         const basename = path.posix.basename(uri.path);
-        const parent = await this.findEntry({
-            targetPath: path.posix.dirname(uri.path),
-        })!;
+        const parent = await this.findEntryMust(path.posix.dirname(uri.path));
         //基本都存在，且是文件
-        let entry = parent!.entries.get(basename);
+        let entry = parent.entries.get(basename);
         //基本都是create=true, overwrite=true
         if (options) {
             if (!entry && !options.create) {
@@ -395,7 +386,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             await GlobalVar.mcsService.updateFileContent(uri.path, "");
         } else {
             await GlobalVar.mcsService.uploadFile({
-                uploadDir: parent!.path,
+                uploadDir: parent.path,
                 filepath: uri.path,
                 content,
             });
@@ -441,14 +432,12 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         const now = Date.now();
         for (const path0 of paths0) {
             const basename = path.posix.basename(path0);
-            const parent = await this.findEntry({
-                targetPath: path.posix.dirname(path0),
-            });
-            parent!.entries.delete(basename);
-            parent!.mtime = now;
+            const parent = await this.findEntryMust(path.posix.dirname(path0));
+            parent.entries.delete(basename);
+            parent.mtime = now;
             changes.push({
                 type: vscode.FileChangeType.Deleted,
-                uri: vscode.Uri.parse(path0),
+                uri: MCSFileSystemProvider.uri({ path: path0 }),
             });
         }
         // 由于2个VIew都可以操作，因此都需要fire
@@ -461,28 +450,28 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
      * 批量移动文件会一个一个执行，非常不好，不推荐在工作区批量移动文件
      */
     async rename(oldUri: vscode.Uri, newUri: vscode.Uri): Promise<void> {
+        const oldName = path.posix.basename(oldUri.path);
+        const oldParent = await this.findEntryMust(
+            path.posix.dirname(oldUri.path)
+        );
+        const newName = path.posix.basename(newUri.path);
+        const newParent = await this.findEntryMust(
+            path.posix.dirname(newUri.path)
+        );
+
         await GlobalVar.mcsService.moveFile(oldUri.path, newUri.path);
 
-        const oldName = path.posix.basename(oldUri.path);
-        const oldParent = await this.findEntry({
-            targetPath: path.posix.dirname(oldUri.path),
-        });
-        const newName = path.posix.basename(newUri.path);
-        const newParent = await this.findEntry({
-            targetPath: path.posix.dirname(newUri.path),
-        });
         const now = Date.now();
+        const oldEntry = oldParent.entries.get(oldName)!;
+        oldParent.entries.delete(oldName);
+        oldParent.mtime = now;
 
-        const oldEntry = oldParent!.entries.get(oldName);
-        oldParent!.entries.delete(oldName);
-        oldParent!.mtime = now;
-
-        oldEntry!.name = newName;
-        oldEntry!.path = newUri.path;
-        oldEntry!.mtime = now;
-        newParent!.entries.set(newName, oldEntry!);
-        newParent!.mtime = now;
-        this._sortEntries(newParent!);
+        oldEntry.name = newName;
+        oldEntry.path = newUri.path;
+        oldEntry.mtime = now;
+        newParent.entries.set(newName, oldEntry);
+        newParent.mtime = now;
+        this._sortEntries(newParent);
 
         this._emitter.fire([
             {
@@ -508,10 +497,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     }): Promise<void> {
         let dist = distEntry;
         if (toDistDir) {
-            const distParent = await this.findParent({
-                targetPath: dist.path,
-            });
-            dist = distParent!;
+            dist = await this.findParentMust(dist.path);
         }
         //移动了目录，目录里的就不需要移动了
         const targetPaths = targets
@@ -542,49 +528,45 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
 
         const oldParentMap = new Map<string, Entry>();
         for (const oldPath of targetPaths) {
-            const oldParent = await this.findEntry({
-                targetPath: path.posix.dirname(oldPath),
-            });
-            oldParentMap.set(oldPath, oldParent!);
+            const oldParent = await this.findEntryMust(
+                path.posix.dirname(oldPath)
+            );
+            oldParentMap.set(oldPath, oldParent);
         }
-        const newParent = await this.findEntry({
-            targetPath: dist.path,
-        });
+        const newParent = await this.findEntryMust(dist.path);
 
         await GlobalVar.mcsService.moveFiles(targetPaths, dist.path);
 
         const now = Date.now();
         //删除旧目录中的，添加到新目录中
-        newParent!.mtime = now;
+        newParent.mtime = now;
         const newPaths: string[] = [];
         for (const [oldPath, oldParent] of oldParentMap) {
             const filename = path.posix.basename(oldPath);
             newPaths.push(path.posix.join(dist.path, filename));
-            const oldEntry = oldParent!.entries.get(filename)!;
+            const oldEntry = oldParent.entries.get(filename)!;
             oldParent.entries.delete(oldEntry.name);
             oldParent.mtime = now;
 
-            oldEntry!.mtime = now;
-            oldEntry!.path = path.posix.join(newParent!.path, filename);
-            newParent!.entries.set(filename, oldEntry!);
+            oldEntry.mtime = now;
+            oldEntry.path = path.posix.join(newParent.path, filename);
+            newParent.entries.set(filename, oldEntry);
         }
-        this._sortEntries(newParent!);
+        this._sortEntries(newParent);
 
         this._emitter.fire([
             ...targetPaths.map((p) => ({
                 type: vscode.FileChangeType.Deleted,
-                uri: vscode.Uri.parse(p),
+                uri: MCSFileSystemProvider.uri({ path: p }),
             })),
             ...newPaths.map((p) => ({
                 type: vscode.FileChangeType.Created,
-                uri: vscode.Uri.parse(p),
+                uri: MCSFileSystemProvider.uri({ path: p }),
             })),
         ]);
         if (targetPaths.length === 1) {
-            const targetParent = await this.findParent({
-                targetPath: targetPaths[0],
-            });
-            GlobalVar.fileTreeDataProvider.refresh(targetParent!);
+            const targetParent = await this.findParentMust(targetPaths[0]);
+            GlobalVar.fileTreeDataProvider.refresh(targetParent);
             GlobalVar.fileTreeDataProvider.refresh(dist);
         } else {
             GlobalVar.fileTreeDataProvider.refresh();
@@ -595,22 +577,18 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         destination: vscode.Uri,
         options: { readonly overwrite: boolean }
     ): Promise<void> {
-        const target = await this.findEntry({
-            targetPath: source.path,
-        });
-        const dist = await this.findEntry({
-            targetPath: destination.path,
-        });
+        const target = await this.findEntryMust(source.path);
+        const dist = await this.findEntryMust(destination.path);
         if (
             !options.overwrite &&
-            dist!.entries.has(path.posix.basename(source.path))
+            dist.entries.has(path.posix.basename(source.path))
         ) {
             throw vscode.FileSystemError.FileExists(destination);
         }
 
         await this.copyFiles({
-            targets: [target!],
-            dist: dist!,
+            targets: [target],
+            dist: dist,
         });
     }
     async copyFiles({

@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
 import { MCSFileItem } from "@/types";
-import { GlobalVar } from "@/utils/global";
-import { timeStamp } from "node:console";
 
 export function isInMCSWorkspace(): boolean {
     return (
@@ -9,9 +7,6 @@ export function isInMCSWorkspace(): boolean {
             (folder) => folder.uri.scheme === "mcs"
         ) ?? false
     );
-}
-export function buildMCSUrl({ path }: { path: string }): string {
-    return `mcs://${path}`;
 }
 export function getItemType(isDir: boolean): number {
     return isDir ? 0 : 1;

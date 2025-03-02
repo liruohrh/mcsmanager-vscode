@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
-import { buildMCSUrl, formatTimestamp } from "@/utils/mcs";
+import { formatTimestamp } from "@/utils/mcs";
 import { formatFileSize } from "@/utils/file";
 import { COMMAND_OPEN_FILE } from "@/commands/files";
-import { Entry } from "@/filesystem/mcs";
+import { Entry, MCSFileSystemProvider } from "@/filesystem/mcs";
 
 export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
     private onDidChangeTreeDataEventEmitter: vscode.EventEmitter<
@@ -38,11 +38,7 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
         // 必须要有uri才能显示文件类型icon，否则icon只是普通的文件、目录icon
         // 不用icon，有resourceUri也行
         // 以resourceUri构建TreeItem也行，自动推断label
-        treeItem.resourceUri = vscode.Uri.parse(
-            buildMCSUrl({
-                path: element.path,
-            })
-        );
+        treeItem.resourceUri = element.uri;
         if (isDir) {
             treeItem.description = updateAtF;
             treeItem.collapsibleState =
@@ -69,9 +65,7 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
         if (!GlobalVar.currentInstance) {
             return [];
         }
-        const uri = vscode.Uri.parse(
-            buildMCSUrl({ path: element ? element.path : "/" })
-        );
+        const uri = element ? element.uri : MCSFileSystemProvider.rootUri;
         return await GlobalVar.fileSystemProvider.readDir(uri);
     }
 }

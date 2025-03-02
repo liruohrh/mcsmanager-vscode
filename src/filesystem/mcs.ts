@@ -10,7 +10,7 @@ import path from "path";
 import { MCSFileItem } from "@/types";
 import { logger } from "@/utils/log";
 
-export class Entry implements MCSFileItem {
+export class Entry implements Omit<MCSFileItem, "time"> {
     isDir: boolean;
     entries: Map<string, Entry>;
     mtime: number;
@@ -19,7 +19,6 @@ export class Entry implements MCSFileItem {
     path: string; // 文件的完整路径
     size: number;
     mode: number;
-    time: string;
     type: number;
     constructor({
         filepath,
@@ -28,7 +27,6 @@ export class Entry implements MCSFileItem {
         content,
         size = 0,
         mode = 777,
-        time = "",
     }: Partial<Entry> & {
         filepath: string;
         isDir: boolean;
@@ -41,7 +39,6 @@ export class Entry implements MCSFileItem {
         this.content = content;
         this.size = size;
         this.mode = mode;
-        this.time = time;
         this.type = getItemType(isDir);
     }
 
@@ -97,7 +94,6 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
                     size: e.size,
                     mode: e.mode,
                     type: e.type,
-                    time: e.time,
                 })
         );
     }

@@ -31,8 +31,8 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
         const sizeF = isDir ? "0" : formatFileSize(element.size);
         const updateAtF = formatTimestamp(element.mtime);
         treeItem.tooltip = JSON.stringify({
-            sizeF: sizeF,
-            updateAtF: updateAtF,
+            size: sizeF,
+            updateAt: updateAtF,
             mode: element.mode,
         });
         // 必须要有uri才能显示文件类型icon，否则icon只是普通的文件、目录icon

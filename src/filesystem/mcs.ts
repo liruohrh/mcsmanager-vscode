@@ -131,6 +131,9 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             }
             this._sortEntries(this.root);
         }
+        if (targetPath === "/") {
+            return this.root;
+        }
         let target = this.root;
         let curPath = "/";
         for (const part of targetPath.split("/")) {
@@ -161,7 +164,6 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
                 return target;
             }
         }
-        return target;
     }
     async findEntryMust(targetPath: string): Promise<Entry> {
         return (await this.findEntry({ targetPath, silent: false }))!;
@@ -407,15 +409,17 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
                 content,
             });
         }
-        entry!.content = content;
-        entry!.mtime = Date.now();
-        entry!.size = content.byteLength;
         this._emitter.fire([
             {
-                type: vscode.FileChangeType.Changed,
+                type: entry
+                    ? vscode.FileChangeType.Changed
+                    : vscode.FileChangeType.Created,
                 uri,
             },
         ]);
+        //不管是更新为空文件、创建新文件、更新文件内容，都这样处理
+        await this.refreshDir(parent);
+        GlobalVar.fileTreeDataProvider.refresh(parent);
     }
 
     /**

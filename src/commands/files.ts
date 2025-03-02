@@ -177,10 +177,12 @@ export async function uploadFileCommand(element: Entry) {
         return;
     }
     const filepath = fileUri[0].fsPath;
+    //path自动转为posix，fsPath不会
+    const filename = path.posix.basename(fileUri[0].path);
     const uploadDir = element.isRootFile ? "/" : element.path;
     await GlobalVar.fileSystemProvider.write(
         MCSFileSystemProvider.uri({
-            path: path.posix.join(uploadDir, path.posix.basename(filepath)),
+            path: path.posix.join(uploadDir, filename),
         }),
         fs.readFileSync(filepath)
     );

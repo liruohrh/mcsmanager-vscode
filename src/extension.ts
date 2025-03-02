@@ -104,11 +104,11 @@ async function afterLogin() {
             dragAndDropController: new MCsFileTreeViewDragDropController(),
         }
     );
-    let isFirstLoad = false;
     mcsFileExplorer.onDidChangeVisibility((e) => {
         //第一次显示时也执行 === 提前加载数据
-        fileSystemProvider.refresh("/", isFirstLoad);
-        isFirstLoad = true;
+        if (e.visible) {
+            fileSystemProvider.refresh("/", false);
+        }
 
         //防止误操作
         const clearContexts = [

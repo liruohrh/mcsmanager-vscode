@@ -21,6 +21,9 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
      */
     refresh(element?: Entry): void {
         //默认更新root -> 更新所有可展开的节点
+        if (element && element.path === "/") {
+            element = undefined;
+        }
         this.onDidChangeTreeDataEventEmitter.fire(element);
     }
 

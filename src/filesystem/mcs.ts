@@ -43,6 +43,22 @@ export class Entry implements Omit<MCSFileItem, "time"> {
     get uriStr() {
         return MCSFileSystemProvider.uriStr({ path: this.path });
     }
+
+    /**
+     * 不强制find，因为既然有Entry了，Root就一定有entries
+     */
+    get isRootFile() {
+        return (
+            !this.isDir &&
+            GlobalVar.fileSystemProvider.root.entries.has(this.name)
+        );
+    }
+    get isRootDir() {
+        return (
+            this.isDir &&
+            GlobalVar.fileSystemProvider.root.entries.has(this.name)
+        );
+    }
 }
 
 export class MCSFileSystemProvider implements vscode.FileSystemProvider {

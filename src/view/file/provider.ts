@@ -47,11 +47,16 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
         } else {
             treeItem.description = `${sizeF} ${updateAtF}`;
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
-            treeItem.contextValue = "file";
+            if (element.isRootFile) {
+                treeItem.contextValue = "rootFile";
+            } else {
+                treeItem.contextValue = "file";
+            }
+
             treeItem.command = {
                 command: COMMAND_OPEN_FILE,
                 title: "Open File",
-                arguments: [element, GlobalVar.currentInstance],
+                arguments: [element],
             };
         }
 

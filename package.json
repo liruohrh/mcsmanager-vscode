@@ -84,34 +84,16 @@
                 "icon": "$(arrow-down)"
             },
             {
-                "command": "mcsManager.uploadFileToRoot",
-                "title": "MCSM: Upload File To Root",
-                "category": "MCSManager",
-                "icon": "$(arrow-up)"
-            },
-            {
                 "command": "mcsManager.uploadFile",
                 "title": "MCSM: Upload File",
                 "category": "MCSManager",
                 "icon": "$(arrow-up)"
             },
             {
-                "command": "mcsManager.createDirInRoot",
-                "title": "MCSM: Create Dir In Root",
-                "category": "MCSManager",
-                "icon": "$(file-directory-create)"
-            },
-            {
                 "command": "mcsManager.createDir",
                 "title": "MCSM: Create Dir",
                 "category": "MCSManager",
                 "icon": "$(file-directory-create)"
-            },
-            {
-                "command": "mcsManager.createFileInRoot",
-                "title": "MCSM: Create File In Root",
-                "category": "MCSManager",
-                "icon": "$(file-add)"
             },
             {
                 "command": "mcsManager.createFile",
@@ -244,44 +226,29 @@
             ],
             "view/item/context": [
                 {
-                    "command": "mcsManager.uploadFileToRoot",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "root@4"
+                    "command": "mcsManager.uploadFile",
+                    "when": "view == mcsFileExplorer && (viewItem == folder || viewItem == rootFile) && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "group": "extra@11"
                 },
                 {
-                    "command": "mcsManager.createDirInRoot",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "root@1"
-                },
-                {
-                    "command": "mcsManager.createFileInRoot",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "root@2"
+                    "command": "mcsManager.downloadFile",
+                    "when": "view == mcsFileExplorer && (viewItem == file || viewItem == rootFile) && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "group": "extra@21"
                 },
                 {
                     "command": "mcsManager.createDir",
-                    "when": "view == mcsFileExplorer  && viewItem == folder && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer  && (viewItem == folder || viewItem == rootFile) && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
                     "group": "file@1"
                 },
                 {
                     "command": "mcsManager.createFile",
-                    "when": "view == mcsFileExplorer  && viewItem == folder && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer  && (viewItem == folder || viewItem == rootFile) && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
                     "group": "file@5"
                 },
                 {
                     "command": "mcsManager.deleteFiles",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedFile",
                     "group": "file@10"
-                },
-                {
-                    "command": "mcsManager.downloadFile",
-                    "when": "view == mcsFileExplorer && viewItem == file && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "file@15"
-                },
-                {
-                    "command": "mcsManager.uploadFile",
-                    "when": "view == mcsFileExplorer && viewItem == folder && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "file@20"
                 },
                 {
                     "command": "mcsManager.renameFile",
@@ -291,7 +258,7 @@
                 {
                     "command": "mcsManager.refreshFiles",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "file@30"
+                    "group": "primary@1"
                 }
             ]
         },

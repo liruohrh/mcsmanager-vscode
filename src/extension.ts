@@ -16,14 +16,11 @@ import {
     refreshFileRootCommand,
     COMMAND_CREATE_FILE,
     createFileCommand,
-    COMMAND_CREATE_FILE_IN_ROOT,
-    COMMAND_CREATE_DIR_IN_ROOT,
     COMMAND_CREATE_DIR,
     COMMAND_DOWNLOAD_FILE,
     downloadFileCommand,
     COMMAND_UPLOAD_FILE,
     uploadFileCommand,
-    COMMAND_UPLOAD_FILE_TO_ROOT,
     COMMAND_RENAME_FILE,
     renameFileCommand,
     COMMAND_UPLOAD_EDITOR_DOCUMENTS,
@@ -204,11 +201,6 @@ async function afterLogin() {
         )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_UPLOAD_FILE_TO_ROOT, () =>
-            uploadFileCommand()
-        )
-    );
-    context.subscriptions.push(
         vscode.commands.registerCommand(COMMAND_UPLOAD_FILE, uploadFileCommand)
     );
     context.subscriptions.push(
@@ -219,23 +211,11 @@ async function afterLogin() {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_CREATE_DIR_IN_ROOT, () => {
-            createFileCommand({
-                isDir: true,
-            });
-        })
-    );
-    context.subscriptions.push(
         vscode.commands.registerCommand(COMMAND_CREATE_DIR, (element) => {
             createFileCommand({
                 isDir: true,
                 element,
             });
-        })
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_CREATE_FILE_IN_ROOT, () => {
-            createFileCommand({});
         })
     );
     context.subscriptions.push(

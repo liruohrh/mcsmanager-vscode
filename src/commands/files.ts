@@ -10,12 +10,9 @@ export const COMMAND_OPEN_AS_WS = "mcsManager.openAsWS";
 export const COMMAND_UPLOAD_EDITOR_DOCUMENTS =
     "mcsManager.uploadEditorDocuments";
 export const COMMAND_RENAME_FILE = "mcsManager.renameFile";
-export const COMMAND_UPLOAD_FILE_TO_ROOT = "mcsManager.uploadFileToRoot";
 export const COMMAND_UPLOAD_FILE = "mcsManager.uploadFile";
 export const COMMAND_DOWNLOAD_FILE = "mcsManager.downloadFile";
-export const COMMAND_CREATE_DIR_IN_ROOT = "mcsManager.createDirInRoot";
 export const COMMAND_CREATE_DIR = "mcsManager.createDir";
-export const COMMAND_CREATE_FILE_IN_ROOT = "mcsManager.createFileInRoot";
 export const COMMAND_CREATE_FILE = "mcsManager.createFile";
 export const COMMAND_DELETE_FILES = "mcsManager.deleteFiles";
 export const COMMAND_REFRESH_FILE_ROOT = "mcsManager.refreshFileRoot";
@@ -161,9 +158,11 @@ export async function renameFileCommand(element?: Entry) {
     vscode.window.showInformationMessage("Rename File success");
 }
 
-export async function uploadFileCommand(element?: Entry) {
-    if (element && !element.isDir) {
-        vscode.window.showErrorMessage(`${element.path} 不是目录, 无法上传`);
+export async function uploadFileCommand(element: Entry) {
+    if (!element.isRootFile && !element.isDir) {
+        vscode.window.showErrorMessage(
+            `${element.path} 不是根目录文件或者目录, 无法上传`
+        );
         return;
     }
     const fileUri = await vscode.window.showOpenDialog({
@@ -178,7 +177,7 @@ export async function uploadFileCommand(element?: Entry) {
         return;
     }
     const filepath = fileUri[0].fsPath;
-    const uploadDir = element ? element.path : "/";
+    const uploadDir = element.isRootFile ? "/" : element.path;
     await GlobalVar.fileSystemProvider.write(
         MCSFileSystemProvider.uri({
             path: path.posix.join(uploadDir, path.posix.basename(filepath)),
@@ -217,24 +216,24 @@ export async function createFileCommand({
     element,
 }: {
     isDir?: boolean;
-    element?: Entry;
+    element: Entry;
 }) {
     const text = isDir ? "目录" : "文件";
-    if (element && !element.isDir) {
+    if (!element.isRootFile && !element.isDir) {
         vscode.window.showErrorMessage(
-            `只能在文件夹下创建${text}, 非法路径 ${element.path}`
+            `只能在根目录文件 或者 文件夹下创建${text}, 非法路径 ${element.path}`
         );
         return;
     }
     const name = await vscode.window.showInputBox({
         placeHolder: `请输入${text}路径（会自动添加${
-            element ? element.path : "/"
+            element.isRootFile ? "/" : element.path
         }）`,
     });
     if (!name) {
         return;
     }
-    const filepath = element
+    const filepath = !element.isRootFile
         ? path.posix.join(element.path, name)
         : name.startsWith("/")
         ? name
@@ -290,10 +289,7 @@ export async function refreshFilesCommand(
     GlobalVar.outputChannel.info(`Success to refresh ${filepath}`);
 }
 
-export async function openFileCommand(fileItem: Entry, instance: MCSInstance) {
-    if (!instance) {
-        throw Error("require instance");
-    }
+export async function openFileCommand(fileItem: Entry) {
     if (isCompressedFile(fileItem.name)) {
         const result = await vscode.window.showWarningMessage(
             `${fileItem.name} is compress file. Do you want to download?`,

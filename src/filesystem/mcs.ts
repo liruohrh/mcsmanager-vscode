@@ -281,12 +281,12 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     }
 
     async create(filepath: string, isDir: boolean): Promise<void> {
-        const parent = await this._find({
-            targetPath: path.posix.dirname(filepath),
-        });
         await GlobalVar.mcsService.mkFile({
             isDir: isDir,
             target: filepath,
+        });
+        const parent = await this._find({
+            targetPath: path.posix.dirname(filepath),
         });
         const now = Date.now();
         const entry = new Entry({
@@ -295,7 +295,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
             mtime: now,
             content: new TextEncoder().encode(""),
         });
-        parent!.mtime = Date.now();
+        parent!.mtime = now;
         parent!.entries.set(entry.name, entry);
         this._sortEntries(parent!);
         this._emitter.fire([

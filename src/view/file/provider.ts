@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
-import { formatDateTime, buildMCSUrl, fromMCSDatetime } from "@/utils/mcs";
+import { buildMCSUrl, formatTimestamp } from "@/utils/mcs";
 import { formatFileSize } from "@/utils/file";
 import { COMMAND_OPEN_FILE } from "@/commands/files";
 import { Entry } from "@/filesystem/mcs";
@@ -26,7 +26,7 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
         const treeItem = new vscode.TreeItem(element.name);
 
         const sizeF = isDir ? "0" : formatFileSize(element.size);
-        const updateAtF = formatDateTime(element.time);
+        const updateAtF = formatTimestamp(element.mtime);
         treeItem.tooltip = JSON.stringify({
             sizeF: sizeF,
             updateAtF: updateAtF,

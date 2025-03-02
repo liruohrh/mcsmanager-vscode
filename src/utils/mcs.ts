@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { MCSFileItem } from "@/types";
 import { GlobalVar } from "@/utils/global";
+import { timeStamp } from "node:console";
 
 export function isInMCSWorkspace(): boolean {
     return (
@@ -22,9 +23,10 @@ export function isDirectory(item: MCSFileItem): boolean {
 export function isFile(item: MCSFileItem): boolean {
     return item.type === 1;
 }
-
-export function formatDateTime(str: string): string {
-    const date = fromMCSDatetime(str);
+export function formatTimestamp(tiemstampMills: number): string {
+    return formatDateTime(new Date(tiemstampMills));
+}
+export function formatDateTime(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
@@ -33,7 +35,7 @@ export function formatDateTime(str: string): string {
     const second = String(date.getSeconds()).padStart(2, "0");
     const timezone = String(-(date.getTimezoneOffset() / 60));
 
-    return `${year}/${month}/${day}-${hour}:${minute}:${second}+${timezone}`;
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}+${timezone}`;
 }
 /**
  *

@@ -1,5 +1,7 @@
 {
     "name": "mcsmanager-vscode",
+    "author": "liruohrh",
+    "repository": "https://github.com/liruohrh/mcsmanager-vscode",
     "displayName": "mcsmanager-vscode",
     "description": "mcsmanager in vscode",
     "version": "0.0.1",
@@ -7,11 +9,10 @@
         "vscode": "^1.94.0"
     },
     "categories": [
-        "MCS",
-        "Manager"
+        "Other"
     ],
     "activationEvents": [
-        "onView:mcsManager"
+        "onFileSystem:mcs"
     ],
     "main": "./dist/extension.js",
     "icon": "assets/icon.png",
@@ -320,7 +321,7 @@
     "devDependencies": {
         "@types/mocha": "^10.0.10",
         "@types/node": "20.x",
-        "@types/vscode": "^1.96.0",
+        "@types/vscode": "^1.94.0",
         "@typescript-eslint/eslint-plugin": "^8.22.0",
         "@typescript-eslint/parser": "^8.22.0",
         "@vscode/test-cli": "^0.0.10",

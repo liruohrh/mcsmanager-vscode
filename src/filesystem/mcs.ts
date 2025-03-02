@@ -189,10 +189,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
     }
 
     async refresh(filepath: string, reopen: boolean = true) {
-        let entry = this.root;
-        if (filepath !== "/") {
-            entry = await this.findParentMust(filepath);
-        }
+        let entry = await this.findEntryMust(filepath);
         if (!entry.isDir) {
             entry.content = new TextEncoder().encode(
                 await GlobalVar.mcsService.getFileContent(entry.path)

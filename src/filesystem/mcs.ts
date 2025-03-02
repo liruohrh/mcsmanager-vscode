@@ -248,8 +248,6 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
         return result;
     }
     async readDir(uri: vscode.Uri): Promise<Entry[]> {
-        //由于在工作区会先执行stat，stat又执行_find会自动获取文件列表。
-        // 因此先找一下有没有，一遍情况下都有
         const dirEntry = await this._find({
             targetPath: uri.path,
             silent: true,
@@ -259,19 +257,7 @@ export class MCSFileSystemProvider implements vscode.FileSystemProvider {
                 ...e,
             }));
         }
-        const data = await GlobalVar.mcsService.getAllFileList({
-            target: uri.path,
-        });
-        const parent =
-            uri.path === "/"
-                ? this.root
-                : await this._find({
-                      targetPath: path.posix.dirname(uri.path),
-                  });
-        for (const entry of this._toEntries(data.data!)) {
-            parent!.entries.set(entry.name, entry);
-        }
-        return [...parent!.entries.values()];
+        return [];
     }
 
     async createDirectory(uri: vscode.Uri): Promise<void> {

@@ -270,6 +270,8 @@ export async function deleteFilesCommand() {
 }
 export function refreshFileRootCommand() {
     GlobalVar.fileSystemProvider.refresh("/");
+    //仅文件列表View支持根刷新，因此需要刷新
+    GlobalVar.fileTreeDataProvider.refresh();
     GlobalVar.outputChannel.info(`Success to refresh /`);
 }
 
@@ -284,6 +286,7 @@ export async function refreshFilesCommand(
     }
     await GlobalVar.fileSystemProvider.refresh(filepath);
     if (!(element instanceof vscode.Uri)) {
+        //uri是工作区刷新，就不刷新文件列表View了
         GlobalVar.fileTreeDataProvider.refresh(element);
     }
     GlobalVar.outputChannel.info(`Success to refresh ${filepath}`);

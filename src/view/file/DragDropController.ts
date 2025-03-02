@@ -25,18 +25,24 @@ export class MCsFileTreeViewDragDropController
         if (!target || this.currentDragData.length === 0) {
             return;
         }
-        let targetDirPath = target.path;
+        let toDistDir = false;
         if (!target.isDir) {
-            targetDirPath = path.posix.dirname(target.path);
             const result = await vscode.window.showErrorMessage(
-                `Can't move multiple files to a file, Whether to change target dir ${target.path} to ${targetDirPath}`,
+                `Can't move multiple files to a file, Whether to change target dir ${
+                    target.path
+                } to it's dir = ${path.posix.dirname(target.path)}`,
                 "Yes",
                 "No"
             );
             if (result !== "Yes") {
                 return;
             }
+            toDistDir = true;
         }
-        GlobalVar.fileSystemProvider.move(this.currentDragData, targetDirPath);
+        GlobalVar.fileSystemProvider.move({
+            targets: this.currentDragData,
+            dist: target,
+            toDistDir: toDistDir
+        });
     }
 }

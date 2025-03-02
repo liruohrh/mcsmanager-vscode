@@ -17,6 +17,7 @@ import {
     uploadFile,
     downloadFile,
     moveFile,
+    copyFile,
 } from "@/api/mcs";
 import { mergeCookie, removeCookie } from "@/utils/cookie";
 import {
@@ -37,6 +38,38 @@ import {
 import { defaultFileErrorGetter, logger } from "@/utils/log";
 
 export class McsService {
+    public async copyFiles(
+        targetPaths: string[],
+        distDirPath: string
+    ): Promise<void> {
+        if (targetPaths.length === 0) {
+            return;
+        }
+        const instance = this.currentInstance;
+        const targets: string[][] = [];
+        for (const targetPath of targetPaths) {
+            targets.push([
+                targetPath,
+                path.posix.join(distDirPath, path.posix.basename(targetPath)),
+            ]);
+        }
+        const resp = await copyFile({
+            daemonId: instance.daemonId,
+            uuid: instance.instanceUuid,
+            targets,
+        });
+        if (resp.base.code !== 0) {
+            throw logger.terror({
+                message: `Failed to copy file ${JSON.stringify(resp.base)}`,
+                errorGetter: defaultFileErrorGetter,
+            });
+        }
+        GlobalVar.outputChannel.info(
+            `Success to copy Files to ${distDirPath}`,
+            targets
+        );
+    }
+
     public async moveFile(oldPath: string, newPath: string): Promise<void> {
         const instance = this.currentInstance;
         if (oldPath === newPath) {

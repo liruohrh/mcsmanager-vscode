@@ -14,6 +14,32 @@ import {
 } from "@/types";
 import { STATE_COOKIE } from "@/utils/constant";
 
+export async function copyFile({
+    daemonId,
+    uuid,
+    targets,
+}: {
+    daemonId: string;
+    uuid: string;
+    targets: string[][];
+}): Promise<APIResp<boolean>> {
+    return axios.post(
+        `/api/files/copy`,
+        {
+            targets,
+        },
+        {
+            params: {
+                daemonId,
+                uuid,
+            },
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+            },
+        }
+    );
+}
+
 export async function moveFile({
     daemonId,
     uuid,

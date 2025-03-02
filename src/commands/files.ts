@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import fs from "fs";
 import { MCSInstance } from "@/types";
-import { buildMCSUrl, fromMCSDatetime, isDirectory } from "@/utils/mcs";
+import { buildMCSUrl } from "@/utils/mcs";
 import { GlobalVar } from "@/utils/global";
 import path from "path";
 import { isCompressedFile } from "@/utils/file";
@@ -18,11 +18,74 @@ export const COMMAND_CREATE_DIR_IN_ROOT = "mcsManager.createDirInRoot";
 export const COMMAND_CREATE_DIR = "mcsManager.createDir";
 export const COMMAND_CREATE_FILE_IN_ROOT = "mcsManager.createFileInRoot";
 export const COMMAND_CREATE_FILE = "mcsManager.createFile";
-export const COMMAND_BATCH_DELETE_FILES = "mcsManager.batchDeleteFiles";
 export const COMMAND_DELETE_FILES = "mcsManager.deleteFiles";
 export const COMMAND_REFRESH_FILE_ROOT = "mcsManager.refreshFileRoot";
 export const COMMAND_REFRESH_FILES = "mcsManager.refreshFiles";
 export const COMMAND_OPEN_FILE = "mcsManager.openFile";
+
+export async function pasteFilesCommand() {
+    const selection = GlobalVar.mcsFileExplorer.selection;
+    if (selection.length !== 1) {
+        return;
+    }
+    const cutEntries = GlobalVar.fileTreeDataProvider.cutEntries;
+    const copyEntries = GlobalVar.fileTreeDataProvider.copyEntries;
+    try {
+        if (
+            cutEntries.length !== 0 &&
+            !(
+                cutEntries.length === 1 &&
+                cutEntries[0].path === selection[0].path
+            )
+        ) {
+            await GlobalVar.fileSystemProvider.move({
+                targets: cutEntries,
+                dist: selection[0],
+            });
+        } else if (copyEntries.length !== 0) {
+            await GlobalVar.fileSystemProvider.copyFiles({
+                targets: copyEntries,
+                dist: selection[0],
+            });
+        }
+    } finally {
+        GlobalVar.fileTreeDataProvider.cutEntries = [];
+        GlobalVar.fileTreeDataProvider.copyEntries = [];
+        vscode.commands.executeCommand(
+            "setContext",
+            "mcsManager.hasCopyOrCutFile",
+            false
+        );
+    }
+}
+export async function cutFilesCommand() {
+    if (GlobalVar.mcsFileExplorer.selection.length === 0) {
+        return;
+    }
+    GlobalVar.fileTreeDataProvider.cutEntries = [
+        ...GlobalVar.mcsFileExplorer.selection,
+    ];
+    GlobalVar.fileTreeDataProvider.copyEntries = [];
+    vscode.commands.executeCommand(
+        "setContext",
+        "mcsManager.hasCopyOrCutFile",
+        true
+    );
+}
+export async function copyFilesCommand() {
+    if (GlobalVar.mcsFileExplorer.selection.length === 0) {
+        return;
+    }
+    GlobalVar.fileTreeDataProvider.copyEntries = [
+        ...GlobalVar.mcsFileExplorer.selection,
+    ];
+    GlobalVar.fileTreeDataProvider.cutEntries = [];
+    vscode.commands.executeCommand(
+        "setContext",
+        "mcsManager.hasCopyOrCutFile",
+        true
+    );
+}
 
 export async function openAsWSCommand() {
     if (!GlobalVar.currentInstance) {
@@ -75,9 +138,20 @@ export async function uploadEditorDocumentsCommand(uri: vscode.Uri) {
     );
 }
 
-export async function renameFileCommand(element: Entry) {
+export async function renameFileCommand(element?: Entry) {
+    if (!element) {
+        if (GlobalVar.mcsFileExplorer.selection.length === 1) {
+            element = GlobalVar.mcsFileExplorer.selection[0];
+        }
+        if (!element) {
+            throw Error("no selected file");
+        }
+    }
     const newName = await vscode.window.showInputBox({
         title: "new name",
+        value: element.name,
+        valueSelection: [0, element.name.lastIndexOf(".")],
+        prompt: `rename ${element.path}`,
     });
     if (!newName) {
         return;
@@ -182,12 +256,13 @@ export async function createFileCommand({
     vscode.window.showInformationMessage(`创建${text} ${filepath} 成功`);
 }
 
-export async function deleteFilesCommand(element?: Entry) {
-    const els = element ? [element] : [...GlobalVar.mcsFileExplorer!.selection];
+export async function deleteFilesCommand() {
+    const els = [...GlobalVar.mcsFileExplorer!.selection];
     if (els.length === 0) {
         await vscode.window.showWarningMessage("要删除文件，请先选中文件");
         return;
     }
+    //删除操作非常危险，需要二次确认
     const result = await vscode.window.showWarningMessage(
         `是否要删除删除${els.length}个文件, [${els
             .map((e) => e.path)

@@ -14,7 +14,6 @@ import {
     openFileCommand,
     refreshFilesCommand,
     refreshFileRootCommand,
-    COMMAND_BATCH_DELETE_FILES,
     COMMAND_CREATE_FILE,
     createFileCommand,
     COMMAND_CREATE_FILE_IN_ROOT,
@@ -31,6 +30,9 @@ import {
     uploadEditorDocumentsCommand,
     COMMAND_OPEN_AS_WS,
     openAsWSCommand,
+    copyFilesCommand,
+    cutFilesCommand,
+    pasteFilesCommand,
 } from "@/commands/files";
 import {
     COMMAND_REFRESH_INSTANCES,
@@ -107,6 +109,36 @@ async function afterLogin() {
         //第一次显示时也执行 === 提前加载数据
         fileSystemProvider.refresh("/", isFirstLoad);
         isFirstLoad = true;
+
+        //防止误操作
+        const clearContexts = [
+            "mcsManager.hasSelectedFile",
+            "mcsManager.hasSelectedSingleFile",
+            "mcsManager.hasSelectedMultiFile",
+            "mcsManager.hasCopyOrCutFile",
+        ];
+        clearContexts.forEach((context) => {
+            vscode.commands.executeCommand("setContext", context, false);
+        });
+        fileTreeDataProvider.copyEntries = [];
+        fileTreeDataProvider.cutEntries = [];
+    });
+    mcsFileExplorer.onDidChangeSelection((e) => {
+        vscode.commands.executeCommand(
+            "setContext",
+            "mcsManager.hasSelectedFile",
+            e.selection.length !== 0
+        );
+        vscode.commands.executeCommand(
+            "setContext",
+            "mcsManager.hasSelectedSingleFile",
+            e.selection.length === 1
+        );
+        vscode.commands.executeCommand(
+            "setContext",
+            "mcsManager.hasSelectedMultiFile",
+            e.selection.length > 1
+        );
     });
     GlobalVar.mcsFileExplorer = mcsFileExplorer;
     context.subscriptions.push(mcsFileExplorer);
@@ -141,6 +173,22 @@ async function afterLogin() {
     );
 
     // 文件
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.copyFiles",
+            copyFilesCommand
+        )
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand("mcsManager.cutFiles", cutFilesCommand)
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.pasteFiles",
+            pasteFilesCommand
+        )
+    );
+
     context.subscriptions.push(
         vscode.commands.registerCommand(COMMAND_OPEN_AS_WS, openAsWSCommand)
     );
@@ -198,14 +246,8 @@ async function afterLogin() {
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_BATCH_DELETE_FILES, () =>
+        vscode.commands.registerCommand(COMMAND_DELETE_FILES, () =>
             deleteFilesCommand()
-        )
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            COMMAND_DELETE_FILES,
-            deleteFilesCommand
         )
     );
 

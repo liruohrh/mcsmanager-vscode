@@ -42,6 +42,24 @@
         },
         "commands": [
             {
+                "command": "mcsManager.copyFiles",
+                "title": "MCSM: Copy Files",
+                "category": "MCSManager",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "mcsManager.cutFiles",
+                "title": "MCSM: Cut Files",
+                "category": "MCSManager",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "mcsManager.pasteFiles",
+                "title": "MCSM: Paste Files",
+                "category": "MCSManager",
+                "icon": "$(copy)"
+            },
+            {
                 "command": "mcsManager.openAsWS",
                 "title": "MCSM: Open As Workspace",
                 "category": "MCSManager",
@@ -209,8 +227,8 @@
                     "group": "navigation@4"
                 },
                 {
-                    "command": "mcsManager.batchDeleteFiles",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "command": "mcsManager.deleteFiles",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedFile",
                     "group": "navigation@3"
                 },
                 {
@@ -252,7 +270,7 @@
                 },
                 {
                     "command": "mcsManager.deleteFiles",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedFile",
                     "group": "file@10"
                 },
                 {
@@ -267,7 +285,7 @@
                 },
                 {
                     "command": "mcsManager.renameFile",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedSingleFile",
                     "group": "file@25"
                 },
                 {
@@ -277,6 +295,33 @@
                 }
             ]
         },
+        "keybindings": [
+            {
+                "command": "mcsManager.renameFile",
+                "key": "f2",
+                "when": "mcsManager.hasSelectedSingleFile"
+            },
+            {
+                "command": "mcsManager.deleteFiles",
+                "key": "delete",
+                "when": "mcsManager.hasSelectedFile"
+            },
+            {
+                "command": "mcsManager.copyFiles",
+                "key": "ctrl+c",
+                "when": "mcsManager.hasSelectedFile"
+            },
+            {
+                "command": "mcsManager.cutFiles",
+                "key": "ctrl+x",
+                "when": "mcsManager.hasSelectedFile"
+            },
+            {
+                "command": "mcsManager.pasteFiles",
+                "key": "ctrl+v",
+                "when": "mcsManager.hasCopyOrCutFile"
+            }
+        ],
         "configuration": {
             "title": "MCSManager",
             "properties": {

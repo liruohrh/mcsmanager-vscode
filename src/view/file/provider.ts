@@ -13,6 +13,9 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
         Entry | undefined | null | void
     > = this.onDidChangeTreeDataEventEmitter.event;
 
+    copyEntries: Entry[] = [];
+    cutEntries: Entry[] = [];
+
     /**
      * 元素必须是同一引用，属性可以不同
      */

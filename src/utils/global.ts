@@ -6,6 +6,7 @@ import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
 import { Entry, MCSFileSystemProvider } from "@/filesystem/mcs";
 
 export class GlobalVar {
+    static clickedFileEntryCount: number = 0;
     static fileSystemProvider: MCSFileSystemProvider;
     static instanceTreeDataProvider: MCSInstanceTreeDataProvider;
     static mcsFileExplorer: vscode.TreeView<Entry>;

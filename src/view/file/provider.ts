@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
 import { formatTimestamp } from "@/utils/mcs";
 import { formatFileSize } from "@/utils/file";
-import { COMMAND_OPEN_FILE } from "@/commands/files";
 import { Entry, MCSFileSystemProvider } from "@/filesystem/mcs";
 
 export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
@@ -50,14 +49,10 @@ export class MCSFileTreeDataProvider implements vscode.TreeDataProvider<Entry> {
         } else {
             treeItem.description = `${sizeF} ${updateAtF}`;
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
-            if (element.isRootFile) {
-                treeItem.contextValue = "rootFile";
-            } else {
-                treeItem.contextValue = "file";
-            }
+            treeItem.contextValue = "file";
 
             treeItem.command = {
-                command: COMMAND_OPEN_FILE,
+                command: "mcsManager.openFile",
                 title: "Open File",
                 arguments: [element],
             };

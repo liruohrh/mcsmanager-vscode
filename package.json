@@ -113,20 +113,20 @@
                 "icon": "$(refresh)"
             },
             {
-                "command": "mcsManager.refreshFileRoot",
-                "title": "MCSM: Refresh File Root",
+                "command": "mcsManager.refreshRootFile",
+                "title": "MCSM: Refresh Root File",
                 "category": "MCSManager",
                 "icon": "$(refresh)"
             },
             {
-                "command": "mcsManager.deleteFiles",
-                "title": "MCSM: Delete Files",
+                "command": "mcsManager.deleteFile",
+                "title": "MCSM: Delete File",
                 "category": "MCSManager",
                 "icon": "$(remove)"
             },
             {
-                "command": "mcsManager.batchDeleteFiles",
-                "title": "MCSM: Batch Delete Files",
+                "command": "mcsManager.deleteFiles",
+                "title": "MCSM: Delete Files",
                 "category": "MCSManager",
                 "icon": "$(remove)"
             },
@@ -195,7 +195,7 @@
                 },
                 {
                     "command": "mcsManager.logout",
-                    "when": "view == mcsInstanceExplorer",
+                    "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
                     "group": "navigation@2"
                 },
                 {
@@ -214,51 +214,61 @@
                     "group": "navigation@3"
                 },
                 {
-                    "command": "mcsManager.refreshFileRoot",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "command": "mcsManager.refreshRootFile",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance",
                     "group": "navigation@5"
                 },
                 {
                     "command": "mcsManager.openAsWS",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance",
                     "group": "navigation@6"
                 }
             ],
             "view/item/context": [
                 {
                     "command": "mcsManager.uploadFile",
-                    "when": "view == mcsFileExplorer && (viewItem == folder || viewItem == rootFile) && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance",
                     "group": "extra@11"
                 },
                 {
                     "command": "mcsManager.downloadFile",
-                    "when": "view == mcsFileExplorer && (viewItem == file || viewItem == rootFile) && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && viewItem == file",
                     "group": "extra@21"
                 },
                 {
                     "command": "mcsManager.createDir",
-                    "when": "view == mcsFileExplorer  && (viewItem == folder || viewItem == rootFile) && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer  && mcsManager.hasSelectedInstance",
                     "group": "file@1"
                 },
                 {
                     "command": "mcsManager.createFile",
-                    "when": "view == mcsFileExplorer  && (viewItem == folder || viewItem == rootFile) && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
-                    "group": "file@5"
+                    "when": "view == mcsFileExplorer  && mcsManager.hasSelectedInstance",
+                    "group": "file@21"
                 },
                 {
-                    "command": "mcsManager.deleteFiles",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedFile",
-                    "group": "file@10"
-                },
-                {
-                    "command": "mcsManager.renameFile",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedSingleFile",
-                    "group": "file@25"
+                    "command": "mcsManager.deleteFile",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance",
+                    "group": "file@31"
                 },
                 {
                     "command": "mcsManager.refreshFiles",
-                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && mcsManager.isLoggedIn",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance",
                     "group": "primary@1"
+                },
+                {
+                    "command": "mcsManager.copyFiles",
+                    "when": "mcsManager.hasSelectedFile",
+                    "group": "primary@21"
+                },
+                {
+                    "command": "mcsManager.cutFiles",
+                    "when": "mcsManager.hasSelectedFile",
+                    "group": "primary@22"
+                },
+                {
+                    "command": "mcsManager.pasteFiles",
+                    "when": "mcsManager.hasCopyOrCutFile",
+                    "group": "primary@23"
                 }
             ]
         },

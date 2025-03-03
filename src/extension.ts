@@ -6,30 +6,20 @@ import { MCSInstanceTreeDataProvider } from "@/view/instance/provider";
 import { McsService } from "@/service/mcs";
 import { GlobalVar } from "@/utils/global";
 import {
-    COMMAND_DELETE_FILES,
-    COMMAND_OPEN_FILE,
-    COMMAND_REFRESH_FILES,
-    COMMAND_REFRESH_FILE_ROOT,
     deleteFilesCommand,
     openFileCommand,
-    refreshFilesCommand,
-    refreshFileRootCommand,
-    COMMAND_CREATE_FILE,
+    refreshFileCommand,
+    refreshRootFileCommand,
     createFileCommand,
-    COMMAND_CREATE_DIR,
-    COMMAND_DOWNLOAD_FILE,
     downloadFileCommand,
-    COMMAND_UPLOAD_FILE,
     uploadFileCommand,
-    COMMAND_RENAME_FILE,
     renameFileCommand,
-    COMMAND_UPLOAD_EDITOR_DOCUMENTS,
     uploadEditorDocumentsCommand,
-    COMMAND_OPEN_AS_WS,
     openAsWSCommand,
     copyFilesCommand,
     cutFilesCommand,
     pasteFilesCommand,
+    deleteFileCommand,
 } from "@/commands/files";
 import {
     COMMAND_REFRESH_INSTANCES,
@@ -45,6 +35,11 @@ import {
     logoutCommand,
     openConfigCommand,
 } from "@/commands/auth";
+import {
+    onlyOneItemCommandWrapper,
+    rightClickCommandWrapper,
+    selectMultiCommandWrapper,
+} from "./utils/command";
 
 export function activate(context: vscode.ExtensionContext) {
     GlobalVar.context = context;
@@ -170,6 +165,28 @@ async function afterLogin() {
     );
 
     // 文件
+    //visutal workspace
+    context.subscriptions.push(
+        vscode.commands.registerCommand("mcsManager.openAsWS", openAsWSCommand)
+    );
+
+    //editor
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.uploadEditorDocuments",
+            uploadEditorDocumentsCommand
+        )
+    );
+
+    //view title
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.deleteFiles",
+            selectMultiCommandWrapper(deleteFilesCommand)
+        )
+    );
+
+    //keyshortcut
     context.subscriptions.push(
         vscode.commands.registerCommand(
             "mcsManager.copyFiles",
@@ -185,66 +202,69 @@ async function afterLogin() {
             pasteFilesCommand
         )
     );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_OPEN_AS_WS, openAsWSCommand)
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_RENAME_FILE, renameFileCommand)
-    );
-
     context.subscriptions.push(
         vscode.commands.registerCommand(
-            COMMAND_UPLOAD_EDITOR_DOCUMENTS,
-            uploadEditorDocumentsCommand
+            "mcsManager.renameFile",
+            onlyOneItemCommandWrapper(renameFileCommand, true)
         )
     );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_UPLOAD_FILE, uploadFileCommand)
-    );
+
+    //right menu
     context.subscriptions.push(
         vscode.commands.registerCommand(
-            COMMAND_DOWNLOAD_FILE,
-            downloadFileCommand
-        )
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_CREATE_DIR, (element) => {
-            createFileCommand({
-                isDir: true,
-                element,
-            });
-        })
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_CREATE_FILE, (element) => {
-            createFileCommand({
-                element,
-            });
-        })
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_DELETE_FILES, () =>
-            deleteFilesCommand()
-        )
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_REFRESH_FILE_ROOT, () =>
-            refreshFileRootCommand()
+            "mcsManager.uploadFile",
+            rightClickCommandWrapper(uploadFileCommand)
         )
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(
-            COMMAND_REFRESH_FILES,
-            refreshFilesCommand
+            "mcsManager.downloadFile",
+            rightClickCommandWrapper(downloadFileCommand)
         )
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_OPEN_FILE, openFileCommand)
+        vscode.commands.registerCommand(
+            "mcsManager.createDir",
+            rightClickCommandWrapper((element) =>
+                createFileCommand({
+                    isDir: true,
+                    element,
+                })
+            )
+        )
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.createFile",
+            rightClickCommandWrapper((element) => {
+                createFileCommand({
+                    element,
+                });
+            })
+        )
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.deleteFile",
+            rightClickCommandWrapper(deleteFileCommand)
+        )
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("mcsManager.refreshRootFile", () =>
+            refreshRootFileCommand()
+        )
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.refreshFiles",
+            rightClickCommandWrapper(refreshFileCommand)
+        )
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("mcsManager.openFile", openFileCommand)
     );
 
     GlobalVar.outputChannel.info("MCSManager is activated");

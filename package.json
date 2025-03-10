@@ -11,6 +11,10 @@
     "engines": {
         "vscode": "^1.94.0"
     },
+    "keywords": [
+        "mcsmanager",
+        "server management"
+    ],
     "categories": [
         "Other"
     ],

@@ -1,10 +1,13 @@
 {
     "name": "mcsmanager-vscode",
     "author": "liruohrh",
+    "publisher": "liruohrh",
+    "private": true,
     "repository": "https://github.com/liruohrh/mcsmanager-vscode",
     "displayName": "mcsmanager-vscode",
-    "description": "mcsmanager in vscode",
     "version": "0.0.1",
+    "icon": "resources/logo.png",
+    "description": "mcsmanager in vscode",
     "engines": {
         "vscode": "^1.94.0"
     },
@@ -12,10 +15,10 @@
         "Other"
     ],
     "activationEvents": [
-        "onFileSystem:mcs"
+        "onFileSystem:mcs",
+        "onView:mcsManager"
     ],
     "main": "./dist/extension.js",
-    "icon": "assets/icon.png",
     "contributes": {
         "viewsContainers": {
             "activitybar": [

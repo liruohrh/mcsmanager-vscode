@@ -22,15 +22,10 @@ import {
     deleteFileCommand,
 } from "@/commands/files";
 import {
-    COMMAND_REFRESH_INSTANCES,
-    COMMAND_SELECT_INSTANCE,
     refreshInstancesCommand,
     selectInstanceCommand,
 } from "@/commands/instance";
 import {
-    COMMAND_LOGIN,
-    COMMAND_LOGOUT,
-    COMMAND_OPEN_CONFIG,
     loginCommand,
     logoutCommand,
     openConfigCommand,
@@ -138,28 +133,31 @@ async function afterLogin() {
     // 注册命令
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_OPEN_CONFIG, openConfigCommand)
+        vscode.commands.registerCommand(
+            "mcsManager.openConfig",
+            openConfigCommand
+        )
     );
 
     // 登录相关
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_LOGIN, loginCommand)
+        vscode.commands.registerCommand("mcsManager.login", loginCommand)
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(COMMAND_LOGOUT, logoutCommand)
+        vscode.commands.registerCommand("mcsManager.logout", logoutCommand)
     );
 
     // 实例
     context.subscriptions.push(
         vscode.commands.registerCommand(
-            COMMAND_SELECT_INSTANCE,
+            "mcsManager.selectInstance",
             selectInstanceCommand
         )
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand(
-            COMMAND_REFRESH_INSTANCES,
+            "mcsManager.refreshInstances",
             refreshInstancesCommand
         )
     );

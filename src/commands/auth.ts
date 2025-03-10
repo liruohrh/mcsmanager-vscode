@@ -1,10 +1,6 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
 
-export const COMMAND_LOGIN = "mcsManager.login";
-export const COMMAND_LOGOUT = "mcsManager.logout";
-export const COMMAND_OPEN_CONFIG = "mcsManager.openConfig";
-
 export async function logoutCommand() {
     await GlobalVar.mcsService.logout();
     GlobalVar.fileTreeDataProvider.refresh();

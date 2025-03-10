@@ -3,9 +3,6 @@ import { GlobalVar } from "@/utils/global";
 import { MCSInstance } from "@/types";
 import { STATE_SELECTED_INSTANCE } from "@/utils/constant";
 
-export const COMMAND_REFRESH_INSTANCES = "mcsManager.refreshInstances";
-export const COMMAND_SELECT_INSTANCE = "mcsManager.selectInstance";
-
 export async function refreshInstancesCommand() {
     const loginUser = await GlobalVar.mcsService.getLoginUser();
     await GlobalVar.mcsService.onLogin(loginUser);

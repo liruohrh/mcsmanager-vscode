@@ -38,6 +38,12 @@ import {
     selectMultiCommandWrapper,
 } from "./utils/command";
 import { logger } from "./utils/log";
+import {
+    CONTEXT_HAS_COPY_OR_CUT_FILE,
+    CONTEXT_HAS_SELECTED_FILE,
+    CONTEXT_HAS_SELECTED_MULTI_FILE,
+    CONTEXT_HAS_SELECTED_SINGLE_FILE,
+} from "./utils/constant";
 
 export function activate(context: vscode.ExtensionContext) {
     GlobalVar.context = context;
@@ -102,10 +108,10 @@ async function afterLogin() {
 
         //防止误操作
         const clearContexts = [
-            "mcsManager.hasSelectedFile",
-            "mcsManager.hasSelectedSingleFile",
-            "mcsManager.hasSelectedMultiFile",
-            "mcsManager.hasCopyOrCutFile",
+            CONTEXT_HAS_SELECTED_FILE,
+            CONTEXT_HAS_SELECTED_SINGLE_FILE,
+            CONTEXT_HAS_SELECTED_MULTI_FILE,
+            CONTEXT_HAS_COPY_OR_CUT_FILE,
         ];
         clearContexts.forEach((context) => {
             vscode.commands.executeCommand("setContext", context, false);
@@ -116,17 +122,17 @@ async function afterLogin() {
     mcsFileExplorer.onDidChangeSelection((e) => {
         vscode.commands.executeCommand(
             "setContext",
-            "mcsManager.hasSelectedFile",
+            CONTEXT_HAS_SELECTED_FILE,
             e.selection.length !== 0
         );
         vscode.commands.executeCommand(
             "setContext",
-            "mcsManager.hasSelectedSingleFile",
+            CONTEXT_HAS_SELECTED_SINGLE_FILE,
             e.selection.length === 1
         );
         vscode.commands.executeCommand(
             "setContext",
-            "mcsManager.hasSelectedMultiFile",
+            CONTEXT_HAS_SELECTED_MULTI_FILE,
             e.selection.length > 1
         );
     });

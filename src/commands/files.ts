@@ -4,6 +4,7 @@ import { GlobalVar } from "@/utils/global";
 import path from "path";
 import { isCompressedFile } from "@/utils/file";
 import { Entry, MCSFileSystemProvider } from "@/filesystem/mcs";
+import { CONTEXT_HAS_COPY_OR_CUT_FILE } from "@/utils/constant";
 
 export async function copyPathCommand(element: Entry) {
     vscode.env.clipboard.writeText(element.path);
@@ -112,7 +113,7 @@ export async function pasteFilesCommand() {
         GlobalVar.fileTreeDataProvider.copyEntries = [];
         vscode.commands.executeCommand(
             "setContext",
-            "mcsManager.hasCopyOrCutFile",
+            CONTEXT_HAS_COPY_OR_CUT_FILE,
             false
         );
     }
@@ -130,7 +131,7 @@ export async function cutFilesCommand() {
     GlobalVar.fileTreeDataProvider.copyEntries = [];
     vscode.commands.executeCommand(
         "setContext",
-        "mcsManager.hasCopyOrCutFile",
+        CONTEXT_HAS_COPY_OR_CUT_FILE,
         true
     );
 }
@@ -147,7 +148,7 @@ export async function copyFilesCommand() {
     GlobalVar.fileTreeDataProvider.cutEntries = [];
     vscode.commands.executeCommand(
         "setContext",
-        "mcsManager.hasCopyOrCutFile",
+        CONTEXT_HAS_COPY_OR_CUT_FILE,
         true
     );
 }

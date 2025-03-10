@@ -22,10 +22,12 @@ import {
 import { mergeCookie, removeCookie } from "@/utils/cookie";
 import {
     STATE_COOKIE,
-    STATE_LOGIN_COOKIE,
+    STATE_LOGIN_COOKIE_NAME,
     STATE_LOGIN_USER,
     STATE_TOKEN,
     STATE_SELECTED_INSTANCE,
+    CONTEXT_IS_LOGGED_IN,
+    CONTEXT_HAS_SELECTED_INSTANCE,
 } from "@/utils/constant";
 import {
     MCSLoginUser,
@@ -495,6 +497,7 @@ export class McsService {
         ) {
             return;
         }
+
         if (await this.isLogin()) {
             const loginUser = await this.getLoginUser();
             await this.onLogin(loginUser!);
@@ -546,8 +549,8 @@ export class McsService {
             );
             const loginUser = await this.getLoginUser();
             await GlobalVar.context.globalState.update(
-                STATE_LOGIN_COOKIE,
-                cookies.map((cookie) => cookie.split("; ")[0])
+                STATE_LOGIN_COOKIE_NAME,
+                cookies.map((cookie) => cookie.split("=", 2)[0])
             );
             await GlobalVar.context.globalState.update(
                 STATE_TOKEN,
@@ -566,7 +569,7 @@ export class McsService {
         await GlobalVar.context.globalState.update(STATE_LOGIN_USER, loginUser);
         await vscode.commands.executeCommand(
             "setContext",
-            "mcsManager.isLoggedIn",
+            CONTEXT_IS_LOGGED_IN,
             true
         );
 
@@ -583,7 +586,7 @@ export class McsService {
                 GlobalVar.currentInstance = instance;
                 await vscode.commands.executeCommand(
                     "setContext",
-                    "mcsManager.hasSelectedInstance",
+                    CONTEXT_HAS_SELECTED_INSTANCE,
                     true
                 );
                 logger.info({
@@ -610,8 +613,7 @@ export class McsService {
         }
         // 忽视错误
         await logout({ token });
-        await this.clearLoginState();
-        await this.clearLoginMemoState();
+        await this.clearLoginData();
         logger.info({
             message: "Success to logout",
         });
@@ -620,19 +622,29 @@ export class McsService {
      * 开启插件时需要重新获取的、非内存变量
      */
     public async clearLoginState(): Promise<void> {
+        await GlobalVar.context.globalState.update(STATE_TOKEN, undefined);
         await GlobalVar.context.globalState.update(STATE_LOGIN_USER, undefined);
+        await GlobalVar.context.globalState.update(STATE_COOKIE, undefined);
+        await GlobalVar.context.globalState.update(
+            STATE_LOGIN_COOKIE_NAME,
+            undefined
+        );
+        await GlobalVar.context.globalState.update(
+            STATE_SELECTED_INSTANCE,
+            undefined
+        );
     }
     public async clearLoginMemoState(): Promise<void> {
         GlobalVar.loginUser = undefined;
         GlobalVar.currentInstance = undefined;
         await vscode.commands.executeCommand(
             "setContext",
-            "mcsManager.isLoggedIn",
+            CONTEXT_IS_LOGGED_IN,
             false
         );
         await vscode.commands.executeCommand(
             "setContext",
-            "mcsManager.hasSelectedInstance",
+            CONTEXT_HAS_SELECTED_INSTANCE,
             false
         );
     }
@@ -640,20 +652,14 @@ export class McsService {
      * 登录态、内存变量
      */
     public async clearLoginData(): Promise<void> {
-        await GlobalVar.context.globalState.update(STATE_TOKEN, undefined);
-        await this.removeLoginCookie();
-
-        await GlobalVar.context.globalState.update(
-            STATE_SELECTED_INSTANCE,
-            undefined
-        );
         await this.clearLoginMemoState();
         await this.clearLoginState();
     }
     public async removeLoginCookie(): Promise<void> {
         const cookie = GlobalVar.context.globalState.get<string>(STATE_COOKIE);
-        const loginCookieNames =
-            GlobalVar.context.globalState.get<string[]>(STATE_LOGIN_COOKIE);
+        const loginCookieNames = GlobalVar.context.globalState.get<string[]>(
+            STATE_LOGIN_COOKIE_NAME
+        );
         if (cookie && loginCookieNames) {
             await GlobalVar.context.globalState.update(
                 STATE_COOKIE,
@@ -661,7 +667,7 @@ export class McsService {
             );
         }
         await GlobalVar.context.globalState.update(
-            STATE_LOGIN_COOKIE,
+            STATE_LOGIN_COOKIE_NAME,
             undefined
         );
     }

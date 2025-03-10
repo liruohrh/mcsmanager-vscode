@@ -1,7 +1,10 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
 import { MCSInstance } from "@/types";
-import { STATE_SELECTED_INSTANCE } from "@/utils/constant";
+import {
+    CONTEXT_HAS_SELECTED_INSTANCE,
+    STATE_SELECTED_INSTANCE,
+} from "@/utils/constant";
 import { logger } from "@/utils/log";
 
 export async function copyInstancesCommand(element: MCSInstance) {
@@ -34,7 +37,7 @@ export async function selectInstanceCommand(instance: MCSInstance) {
     await vscode.window.showInformationMessage(message);
     vscode.commands.executeCommand(
         "setContext",
-        "mcsManager.hasSelectedInstance",
+        CONTEXT_HAS_SELECTED_INSTANCE,
         true
     );
 }

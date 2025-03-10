@@ -21,14 +21,16 @@ export class MCSInstanceTreeDataProvider
             element.nickname,
             vscode.TreeItemCollapsibleState.None
         );
-        if (GlobalVar.currentInstance?.instanceUuid === element.instanceUuid) {
-            treeItem.description = "✅";
-        }
         treeItem.tooltip = JSON.stringify(element);
         treeItem.iconPath = new vscode.ThemeIcon(
             element.status === 0 ? "stop" : "play-circle"
         );
-        treeItem.description = element.hostIp;
+        let description = "";
+        if (GlobalVar.currentInstance?.instanceUuid === element.instanceUuid) {
+            description += "✅";
+        }
+        description += "\t" + element.hostIp;
+        treeItem.description = description;
 
         treeItem.command = {
             command: "mcsManager.selectInstance",

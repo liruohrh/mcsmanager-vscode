@@ -584,6 +584,7 @@ export class McsService {
             );
             if (instance) {
                 GlobalVar.currentInstance = instance;
+                GlobalVar.fileSystemProvider?.root?.entries?.clear();
                 await vscode.commands.executeCommand(
                     "setContext",
                     CONTEXT_HAS_SELECTED_INSTANCE,
@@ -647,6 +648,7 @@ export class McsService {
             CONTEXT_HAS_SELECTED_INSTANCE,
             false
         );
+        GlobalVar.fileSystemProvider.root.entries.clear();
     }
     /**
      * 登录态、内存变量

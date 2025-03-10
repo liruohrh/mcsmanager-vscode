@@ -24,6 +24,7 @@ export async function refreshInstancesCommand() {
 
 export async function selectInstanceCommand(instance: MCSInstance) {
     GlobalVar.currentInstance = instance;
+    GlobalVar.fileSystemProvider.root.entries.clear();
     await GlobalVar.context.globalState.update(
         STATE_SELECTED_INSTANCE,
         instance

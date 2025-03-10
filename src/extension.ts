@@ -102,7 +102,7 @@ async function afterLogin() {
     );
     mcsFileExplorer.onDidChangeVisibility((e) => {
         //第一次显示时也执行 === 提前加载数据
-        if (e.visible) {
+        if (e.visible && GlobalVar.currentInstance) {
             fileSystemProvider.refresh("/", false);
         }
 

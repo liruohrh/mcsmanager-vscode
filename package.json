@@ -175,13 +175,13 @@
         "viewsWelcome": [
             {
                 "view": "mcsInstanceExplorer",
-                "contents": "No instances found.\n[Login](command:mcsManager.login)",
+                "contents": "Here is instance explorer,\nplease wait for login.",
                 "when": "!mcsManager.isLoggedIn"
             },
             {
                 "view": "mcsFileExplorer",
-                "contents": "No files found.\n[Login](command:mcsManager.login)",
-                "when": "!mcsManager.isLoggedIn"
+                "contents": "Here is selected instance file explorer,\nplease wait for login.",
+                "when": "!mcsManager.hasSelectedInstance"
             }
         ],
         "menus": {

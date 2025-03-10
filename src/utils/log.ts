@@ -1,7 +1,13 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
-
+interface LoggerArgs {
+    message: string;
+    args?: any[];
+}
 export const logger = {
+    info({ message, args }: LoggerArgs) {
+        GlobalVar.outputChannel.info(message, ...(args ?? []));
+    },
     terror({
         message,
         args,
@@ -11,11 +17,7 @@ export const logger = {
         args?: any[];
         errorGetter?: (messageOrUri: string) => Error;
     }): Error {
-        if (args) {
-            GlobalVar.outputChannel.error(message, args);
-        } else {
-            GlobalVar.outputChannel.error(message);
-        }
+        GlobalVar.outputChannel.error(message, ...(args ?? []));
         return errorGetter(message);
     },
 };

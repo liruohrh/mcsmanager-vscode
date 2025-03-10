@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
 import { MCSInstance } from "@/types";
 import { STATE_SELECTED_INSTANCE } from "@/utils/constant";
+import { logger } from "@/utils/log";
 
 export async function copyInstancesCommand(element: MCSInstance) {
     vscode.env.clipboard.writeText(JSON.stringify(element));
@@ -13,7 +14,9 @@ export async function refreshInstancesCommand() {
     await GlobalVar.mcsService.onLogin(loginUser);
     GlobalVar.instanceTreeDataProvider.refresh();
     GlobalVar.fileTreeDataProvider.refresh();
-    GlobalVar.outputChannel.info("Instances refreshed");
+    logger.info({
+        message: "Instances refreshed",
+    });
 }
 
 export async function selectInstanceCommand(instance: MCSInstance) {
@@ -24,8 +27,10 @@ export async function selectInstanceCommand(instance: MCSInstance) {
     );
     GlobalVar.instanceTreeDataProvider.refresh();
     GlobalVar.fileTreeDataProvider.refresh();
-    const message = `选中实例: ${instance.nickname}`;
-    GlobalVar.outputChannel.info(message);
+    const message = `select instance of ${instance.nickname}`;
+    logger.info({
+        message,
+    });
     await vscode.window.showInformationMessage(message);
     vscode.commands.executeCommand(
         "setContext",

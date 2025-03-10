@@ -381,7 +381,7 @@ axios.interceptors.response.use(
         if (!error.message && !error.response) {
             if (error.codes === "ECONNREFUSED") {
                 vscode.window.showErrorMessage(
-                    `服务器不在线 ${Config.urlPrefix}`
+                    `Server is down. ${Config.urlPrefix}`
                 );
             }
             //client error

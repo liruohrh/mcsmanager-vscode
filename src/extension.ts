@@ -37,6 +37,7 @@ import {
     rightClickCommandWrapper,
     selectMultiCommandWrapper,
 } from "./utils/command";
+import { logger } from "./utils/log";
 
 export function activate(context: vscode.ExtensionContext) {
     GlobalVar.context = context;
@@ -279,8 +280,9 @@ async function afterLogin() {
     context.subscriptions.push(
         vscode.commands.registerCommand("mcsManager.openFile", openFileCommand)
     );
-
-    GlobalVar.outputChannel.info("MCSManager is activated");
+    logger.info({
+        message: "MCSManager is activated",
+    });
 }
 
 export function deactivate() {

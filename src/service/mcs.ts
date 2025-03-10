@@ -64,10 +64,10 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
-        GlobalVar.outputChannel.info(
-            `Success to copy Files to ${distDirPath}`,
-            targets
-        );
+        logger.info({
+            message: `Success to copy Files to ${distDirPath}`,
+            args: [targets],
+        });
     }
 
     public async moveFile(oldPath: string, newPath: string): Promise<void> {
@@ -91,9 +91,9 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
-        GlobalVar.outputChannel.info(
-            `Success to move ${oldPath} to ${newPath}`
-        );
+        logger.info({
+            message: `Success to move ${oldPath} to ${newPath}`,
+        });
     }
 
     public async moveFiles(
@@ -122,10 +122,10 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
-        GlobalVar.outputChannel.info(
-            `Success to move Files to ${targetDirPath}`,
-            targets
-        );
+        logger.info({
+            message: `Success to move Files to ${targetDirPath}`,
+            args: [targets],
+        });
     }
 
     public async downloadFile({
@@ -173,11 +173,11 @@ export class McsService {
             fs.writeFileSync(distpath, resp2.base.data!);
             return;
         }
-        GlobalVar.outputChannel.info(
-            `Success to  download File ${filepath}${
+        logger.info({
+            message: `Success to  download File ${filepath}${
                 distpath ? ` to ${distpath}` : ""
-            }`
-        );
+            }`,
+        });
         return resp2.base.data!;
     }
 
@@ -226,9 +226,9 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
-        GlobalVar.outputChannel.info(
-            `Success to upload File ${filepath} to ${uploadDir}`
-        );
+        logger.info({
+            message: `Success to upload File ${filepath} to ${uploadDir}`,
+        });
     }
     public async mkFile({
         isDir = false,
@@ -255,7 +255,9 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
-        GlobalVar.outputChannel.info(`Success to mkdir ${target}`);
+        logger.info({
+            message: `Success to mkdir ${target}`,
+        });
         return resp.base.data!;
     }
     public async createFile(target: string): Promise<boolean> {
@@ -271,7 +273,9 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
-        GlobalVar.outputChannel.info(`Success to mk file ${target}`);
+        logger.info({
+            message: `Success to mk file ${target}`,
+        });
         return resp.base.data!;
     }
     public async deleteFiles(targets: string[]): Promise<boolean> {
@@ -288,7 +292,10 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
-        GlobalVar.outputChannel.info(`Success to delete files`, targets);
+        logger.info({
+            message: `Success to delete files`,
+            args: [targets],
+        });
         return resp.base.data!;
     }
     public async updateFileContent(
@@ -308,7 +315,9 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
-        GlobalVar.outputChannel.info(`Success to update ${target}`);
+        logger.info({
+            message: `Success to update ${target}`,
+        });
         return resp.base.data!;
     }
 
@@ -328,7 +337,9 @@ export class McsService {
         if (resp.base.data! === true) {
             return "";
         }
-        GlobalVar.outputChannel.info(`Success to get ${target}`);
+        logger.info({
+            message: `Success to get content of ${target}`,
+        });
         return resp.base.data as string;
     }
 
@@ -385,13 +396,13 @@ export class McsService {
                     }));
                     fileItems.push(...items);
                     if (resp.base.data?.total === fileItems.length) {
-                        GlobalVar.outputChannel.info(
-                            `Success to execute ${
+                        logger.info({
+                            message: `Success to execute ${
                                 i + 1
                             } times to get the file list of ${
                                 params.target
-                            }, a total of ${fileItems.length} files`
-                        );
+                            }, a total of ${fileItems.length} files`,
+                        });
                         break;
                     }
                 }
@@ -439,9 +450,9 @@ export class McsService {
             ...item,
             path: path.posix.join(params.target, item.name),
         }));
-        GlobalVar.outputChannel.info(
-            `Success to get the file list of ${params.target}, a total of ${resp.base.data?.items?.length} files`
-        );
+        logger.info({
+            message: `Success to get the file list of ${params.target}, a total of ${resp.base.data?.items?.length} files`,
+        });
         return {
             ...resp.base.data!,
             items,
@@ -469,7 +480,9 @@ export class McsService {
                 )}`,
             });
         }
-        GlobalVar.outputChannel.info(`Success to get LoginUser`);
+        logger.info({
+            message: `Success to get LoginUser`,
+        });
         return resp.base.data!;
     }
 
@@ -485,14 +498,16 @@ export class McsService {
         if (await this.isLogin()) {
             const loginUser = await this.getLoginUser();
             await this.onLogin(loginUser!);
-            GlobalVar.outputChannel.info(
-                "autoLogin: already login, directly get LoginUser"
-            );
+            logger.info({
+                message: "autoLogin: already login, directly get LoginUser",
+            });
             return;
         }
         await this.clearLoginData();
         await this.login();
-        GlobalVar.outputChannel.info("Success to autoLogin");
+        logger.info({
+            message: "Success to autoLogin",
+        });
     }
 
     public async login(): Promise<void> {
@@ -539,7 +554,9 @@ export class McsService {
                 resp.base.data
             );
             await this.onLogin(loginUser);
-            GlobalVar.outputChannel.info("Success to Login");
+            logger.info({
+                message: "Success to Login",
+            });
         } finally {
             GlobalVar.isSigningIn = false;
         }
@@ -569,9 +586,9 @@ export class McsService {
                     "mcsManager.hasSelectedInstance",
                     true
                 );
-                GlobalVar.outputChannel.info(
-                    `OnLogin: recover old selected instance, ${instance.nickname}`
-                );
+                logger.info({
+                    message: `OnLogin: recover old selected instance, ${instance.nickname}`,
+                });
                 return;
             }
         }
@@ -595,7 +612,9 @@ export class McsService {
         await logout({ token });
         await this.clearLoginState();
         await this.clearLoginMemoState();
-        GlobalVar.outputChannel.info("Success to logout");
+        logger.info({
+            message: "Success to logout",
+        });
     }
     /**
      * 开启插件时需要重新获取的、非内存变量

@@ -20,8 +20,10 @@ import {
     cutFilesCommand,
     pasteFilesCommand,
     deleteFileCommand,
+    copyPathCommand,
 } from "@/commands/files";
 import {
+    copyInstancesCommand,
     refreshInstancesCommand,
     selectInstanceCommand,
 } from "@/commands/instance";
@@ -162,6 +164,13 @@ async function afterLogin() {
         )
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.copyInstance",
+            rightClickCommandWrapper(copyInstancesCommand)
+        )
+    );
+
     // 文件
     //visutal workspace
     context.subscriptions.push(
@@ -218,6 +227,12 @@ async function afterLogin() {
         vscode.commands.registerCommand(
             "mcsManager.downloadFile",
             rightClickCommandWrapper(downloadFileCommand)
+        )
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.copyPath",
+            rightClickCommandWrapper(copyPathCommand)
         )
     );
 

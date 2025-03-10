@@ -42,6 +42,18 @@
         },
         "commands": [
             {
+                "command": "mcsManager.copyInstance",
+                "title": "MCSM: Copy Instance",
+                "category": "MCSManager",
+                "icon": "$(copy)"
+            },
+            {
+                "command": "mcsManager.copyPath",
+                "title": "MCSM: Copy Path",
+                "category": "MCSManager",
+                "icon": "$(copy)"
+            },
+            {
                 "command": "mcsManager.copyFiles",
                 "title": "MCSM: Copy Files",
                 "category": "MCSManager",
@@ -226,6 +238,11 @@
             ],
             "view/item/context": [
                 {
+                    "command": "mcsManager.copyInstance",
+                    "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
+                    "group": "extra@1"
+                },
+                {
                     "command": "mcsManager.uploadFile",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance",
                     "group": "extra@11"
@@ -234,6 +251,11 @@
                     "command": "mcsManager.downloadFile",
                     "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance && viewItem == file",
                     "group": "extra@21"
+                },
+                {
+                    "command": "mcsManager.copyPath",
+                    "when": "view == mcsFileExplorer && mcsManager.hasSelectedInstance",
+                    "group": "extra@31"
                 },
                 {
                     "command": "mcsManager.createDir",

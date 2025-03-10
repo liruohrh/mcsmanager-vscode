@@ -3,6 +3,11 @@ import { GlobalVar } from "@/utils/global";
 import { MCSInstance } from "@/types";
 import { STATE_SELECTED_INSTANCE } from "@/utils/constant";
 
+export async function copyInstancesCommand(element: MCSInstance) {
+    vscode.env.clipboard.writeText(JSON.stringify(element));
+    vscode.window.showInformationMessage("Copy instance to clipboard");
+}
+
 export async function refreshInstancesCommand() {
     const loginUser = await GlobalVar.mcsService.getLoginUser();
     await GlobalVar.mcsService.onLogin(loginUser);

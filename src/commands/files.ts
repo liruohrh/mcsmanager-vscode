@@ -5,6 +5,11 @@ import path from "path";
 import { isCompressedFile } from "@/utils/file";
 import { Entry, MCSFileSystemProvider } from "@/filesystem/mcs";
 
+export async function copyPathCommand(element: Entry) {
+    vscode.env.clipboard.writeText(element.path);
+    vscode.window.showInformationMessage("Copy filepath to clipboard");
+}
+
 export async function openAsWSCommand() {
     if (!GlobalVar.currentInstance) {
         vscode.window.showErrorMessage("has not select instance");

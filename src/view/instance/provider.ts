@@ -28,6 +28,7 @@ export class MCSInstanceTreeDataProvider
         treeItem.iconPath = new vscode.ThemeIcon(
             element.status === 0 ? "stop" : "play-circle"
         );
+        treeItem.description = element.hostIp;
 
         treeItem.command = {
             command: "mcsManager.selectInstance",

@@ -20,29 +20,25 @@ import {
     cutFilesCommand,
     pasteFilesCommand,
     deleteFileCommand,
-    copyPathCommand,
+    copyPathCommand
 } from "@/commands/files";
 import {
     copyInstancesCommand,
     refreshInstancesCommand,
-    selectInstanceCommand,
+    selectInstanceCommand
 } from "@/commands/instance";
-import {
-    loginCommand,
-    logoutCommand,
-    openConfigCommand,
-} from "@/commands/auth";
+import { openConfigCommand } from "@/commands/common";
 import {
     onlyOneItemCommandWrapper,
     rightClickCommandWrapper,
-    selectMultiCommandWrapper,
+    selectMultiCommandWrapper
 } from "./utils/command";
 import { logger } from "./utils/log";
 import {
     CONTEXT_HAS_COPY_OR_CUT_FILE,
     CONTEXT_HAS_SELECTED_FILE,
     CONTEXT_HAS_SELECTED_MULTI_FILE,
-    CONTEXT_HAS_SELECTED_SINGLE_FILE,
+    CONTEXT_HAS_SELECTED_SINGLE_FILE
 } from "./utils/constant";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -51,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册输出面板
     const outputChannel = vscode.window.createOutputChannel("MCSManager", {
-        log: true,
+        log: true
     });
     context.subscriptions.push(outputChannel);
     GlobalVar.outputChannel = outputChannel;
@@ -74,7 +70,7 @@ async function afterLogin() {
     context.subscriptions.push(
         vscode.workspace.registerFileSystemProvider("mcs", fileSystemProvider, {
             isCaseSensitive: true,
-            isReadonly: false,
+            isReadonly: false
         })
     );
 
@@ -97,7 +93,7 @@ async function afterLogin() {
             treeDataProvider: fileTreeDataProvider,
             canSelectMany: true,
             showCollapseAll: true,
-            dragAndDropController: new MCsFileTreeViewDragDropController(),
+            dragAndDropController: new MCsFileTreeViewDragDropController()
         }
     );
     mcsFileExplorer.onDidChangeVisibility((e) => {
@@ -111,7 +107,7 @@ async function afterLogin() {
             CONTEXT_HAS_SELECTED_FILE,
             CONTEXT_HAS_SELECTED_SINGLE_FILE,
             CONTEXT_HAS_SELECTED_MULTI_FILE,
-            CONTEXT_HAS_COPY_OR_CUT_FILE,
+            CONTEXT_HAS_COPY_OR_CUT_FILE
         ];
         clearContexts.forEach((context) => {
             vscode.commands.executeCommand("setContext", context, false);
@@ -147,15 +143,6 @@ async function afterLogin() {
             openConfigCommand
         )
     );
-
-    // 登录相关
-    context.subscriptions.push(
-        vscode.commands.registerCommand("mcsManager.login", loginCommand)
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand("mcsManager.logout", logoutCommand)
-    );
-
     // 实例
     context.subscriptions.push(
         vscode.commands.registerCommand(
@@ -249,7 +236,7 @@ async function afterLogin() {
             rightClickCommandWrapper((element) =>
                 createFileCommand({
                     isDir: true,
-                    element,
+                    element
                 })
             )
         )
@@ -259,7 +246,7 @@ async function afterLogin() {
             "mcsManager.createFile",
             rightClickCommandWrapper((element) => {
                 createFileCommand({
-                    element,
+                    element
                 });
             })
         )
@@ -287,7 +274,7 @@ async function afterLogin() {
         vscode.commands.registerCommand("mcsManager.openFile", openFileCommand)
     );
     logger.info({
-        message: "MCSManager is activated",
+        message: "MCSManager is activated"
     });
 }
 

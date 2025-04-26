@@ -11,7 +11,6 @@ export class GlobalVar {
     static instanceTreeDataProvider: MCSInstanceTreeDataProvider;
     static mcsFileExplorer: vscode.TreeView<Entry>;
     static fileTreeDataProvider: MCSFileTreeDataProvider;
-    static isSigningIn = false;
     static loginUser?: MCSLoginUser;
     static currentInstance?: MCSInstance;
     static context: vscode.ExtensionContext;

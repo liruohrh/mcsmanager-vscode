@@ -3,9 +3,6 @@ import { AxiosError, AxiosResponse } from "axios";
 export interface ServiceConfig {
     readonly urlPrefix: string;
     readonly apiKey: string;
-    readonly autoLogin: boolean;
-    readonly username: string;
-    readonly password: string;
 }
 
 // api

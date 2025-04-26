@@ -161,18 +161,6 @@
                 "icon": "$(refresh)"
             },
             {
-                "command": "mcsManager.login",
-                "title": "MCSM: Login",
-                "category": "MCSManager",
-                "icon": "$(sign-in)"
-            },
-            {
-                "command": "mcsManager.logout",
-                "title": "MCSM: Logout",
-                "category": "MCSManager",
-                "icon": "$(sign-out)"
-            },
-            {
                 "command": "mcsManager.openConfig",
                 "title": "MCSM: Open Settings",
                 "category": "MCSManager",
@@ -207,16 +195,6 @@
                 }
             ],
             "view/title": [
-                {
-                    "command": "mcsManager.login",
-                    "when": "view == mcsInstanceExplorer",
-                    "group": "navigation@1"
-                },
-                {
-                    "command": "mcsManager.logout",
-                    "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
-                    "group": "navigation@2"
-                },
                 {
                     "command": "mcsManager.openConfig",
                     "when": "view == mcsInstanceExplorer",
@@ -334,19 +312,6 @@
                 "mcsManager.urlPrefix": {
                     "type": "string",
                     "description": "MCSManager服务urlPrefix"
-                },
-                "mcsManager.username": {
-                    "type": "string",
-                    "description": "账号"
-                },
-                "mcsManager.password": {
-                    "type": "string",
-                    "description": "密码"
-                },
-                "mcsManager.autoLogin": {
-                    "type": "boolean",
-                    "description": "自动登录",
-                    "default": true
                 },
                 "mcsManager.apiKey": {
                     "type": "string",

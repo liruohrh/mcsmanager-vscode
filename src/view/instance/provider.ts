@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { GlobalVar } from "@/utils/global";
 import { MCSInstance } from "@/types";
+import { isInstanceRunning } from "@/utils/mcs";
 
 export class MCSInstanceTreeDataProvider
     implements vscode.TreeDataProvider<MCSInstance>
@@ -23,7 +24,7 @@ export class MCSInstanceTreeDataProvider
         );
         treeItem.tooltip = JSON.stringify(element);
         treeItem.iconPath = new vscode.ThemeIcon(
-            element.status === 0 ? "stop" : "play-circle"
+            isInstanceRunning(element.status) ? "play-circle" : "stop"
         );
         let description = "";
         if (GlobalVar.currentInstance?.instanceUuid === element.instanceUuid) {

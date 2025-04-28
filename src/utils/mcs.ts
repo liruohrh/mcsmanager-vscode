@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 import { MCSFileItem } from "@/types";
 
+export function isInstanceRunning(status: number): boolean {
+    return status !== 0;
+}
+
 export function isInMCSWorkspace(): boolean {
     return (
         vscode.workspace.workspaceFolders?.some(

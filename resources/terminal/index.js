@@ -19,8 +19,7 @@ terminal.loadAddon(searchAddon);
 terminal.loadAddon(webLinksAddon);
 const terminalContainer = document.getElementById("terminal");
 terminal.open(terminalContainer);
-
-fitAddon.fit();
+fitTerminal();
 
 // 搜索相关函数
 function findNext() {
@@ -55,8 +54,16 @@ document.getElementById("searchInput").addEventListener("keydown", (e) => {
 
 // 监听窗口大小变化
 window.addEventListener("resize", (e) => {
-    fitAddon.fit();
+    fitTerminal();
 });
+
+function fitTerminal() {
+    //fitAddon不会调整高度
+    fitAddon.fit();
+    const ic = document.querySelector(".input-container");
+    const newHeight = window.innerHeight - ic.offsetHeight;
+    document.querySelector("#terminal").style.height = newHeight + "px";
+}
 
 // 添加按钮的事件处理
 const clearButton = document.getElementById("clearButton");

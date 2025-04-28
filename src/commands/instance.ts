@@ -31,7 +31,7 @@ export async function restartInstanceCommand(element: MCSInstance) {
         });
         return;
     }
-    restartInstanceCommand(element);
+    refreshInstancesCommand();
     vscode.window.showInformationMessage("success to restart instance");
 }
 

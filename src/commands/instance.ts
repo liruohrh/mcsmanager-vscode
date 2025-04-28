@@ -6,6 +6,20 @@ import {
     STATE_SELECTED_INSTANCE,
 } from "@/utils/constant";
 import { logger } from "@/utils/log";
+import { TerminalView } from "@/view/TerminalView";
+import { isInstanceRunning } from "@/utils/mcs";
+
+export async function openInstanceTerminalCommand(element: MCSInstance) {
+    if (!isInstanceRunning(element.status)) {
+        vscode.window.showErrorMessage("Instance is not running");
+        return;
+    }
+    TerminalView.createOrShow({
+        daemonId: element.daemonId,
+        instanceId: element.instanceUuid,
+        instanceName: element.nickname,
+    });
+}
 
 export async function copyInstancesCommand(element: MCSInstance) {
     vscode.env.clipboard.writeText(JSON.stringify(element));

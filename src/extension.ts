@@ -24,6 +24,7 @@ import {
 } from "@/commands/files";
 import {
     copyInstancesCommand,
+    openInstanceTerminalCommand,
     refreshInstancesCommand,
     selectInstanceCommand,
 } from "@/commands/instance";
@@ -155,6 +156,13 @@ async function afterLogin() {
         vscode.commands.registerCommand(
             "mcsManager.refreshInstances",
             refreshInstancesCommand
+        )
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.openInstanceTerminal",
+            rightClickCommandWrapper(openInstanceTerminalCommand)
         )
     );
 

@@ -49,6 +49,12 @@
         },
         "commands": [
             {
+                "command": "mcsManager.openInstanceTerminal",
+                "title": "Open MCS Instance Terminal",
+                "category": "MCSManager",
+                "icon": "$(terminal)"
+            },
+            {
                 "command": "mcsManager.copyInstance",
                 "title": "MCSM: Copy Instance",
                 "category": "MCSManager",
@@ -223,6 +229,11 @@
             ],
             "view/item/context": [
                 {
+                    "command": "mcsManager.openInstanceTerminal",
+                    "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
+                    "group": "opt@1"
+                },
+                {
                     "command": "mcsManager.copyInstance",
                     "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
                     "group": "extra@1"
@@ -348,8 +359,14 @@
         "typescript": "^5.7.3"
     },
     "dependencies": {
+        "@xterm/addon-fit": "^0.10.0",
+        "@xterm/addon-search": "^0.15.0",
+        "@xterm/addon-web-links": "^0.11.0",
+        "@xterm/xterm": "^5.5.0",
         "axios": "^1.7.9",
         "form-data": "^4.0.1",
-        "mcsmanager-vscode": "file:"
+        "mcsmanager-vscode": "file:",
+        "socket.io-client": "^4.7.2",
+        "xterm": "^5.3.0"
     }
 }

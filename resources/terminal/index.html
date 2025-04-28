@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="{{indexCssUrl}}" />
+    {{resourceUrlEls}}
+</head>
+
+<body>
+    <div id="terminal"></div>
+    <div id="searchBox">
+        <input type="text" id="searchInput" placeholder="搜索...">
+        <button onclick="findNext()" class="search-button">下一个</button>
+        <button onclick="findPrevious()" class="search-button">上一个</button>
+        <button onclick="closeSearch()" class="search-button">关闭</button>
+    </div>
+    <div class="input-container-replacer"></div>
+    <div class="input-container">
+        <input type="text" id="commandInput" placeholder="输入命令...">
+        <div class="button-group">
+            <button id="clearButton" class="action-button">清屏</button>
+            <button id="allButton" class="action-button">全部</button>
+            <button id="exportButton" class="action-button">导出</button>
+            <button id="historyButton" class="action-button">历史命令</button>
+            <button id="searchButton" class="action-button">搜索</button>
+            <div class="dropdown-menu">
+                <button class="dropdown-button">更多</button>
+                <div class="dropdown-content"></div>
+            </div>
+        </div>
+    </div>
+    <div id="historyPanel"></div>
+    <script src="{{indexJsUrl}}"></script>
+</body>
+
+</html>

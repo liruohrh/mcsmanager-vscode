@@ -1,0 +1,167 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#terminal {
+    flex: 1;
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    padding: 0;
+}
+/* 替代input-container留下的位置以防止终端被fixed遮蔽 */
+.input-container-replacer {
+    display: block;
+    height: 60px;
+}
+.input-container {
+    display: flex;
+    padding: 8px;
+    background-color: #2d2d2d;
+    border-top: 1px solid #3d3d3d;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+#commandInput {
+    flex: 1;
+    background-color: #3d3d3d;
+    border: 1px solid #4d4d4d;
+    color: #d4d4d4;
+    padding: 6px 8px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 14px;
+    outline: none;
+}
+
+.action-button {
+    margin-left: 8px;
+    background-color: #0e639c;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.action-button:hover {
+    background-color: #1177bb;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+}
+
+.dropdown-menu {
+    display: none;
+    position: relative;
+}
+
+.dropdown-button {
+    background-color: #0e639c;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background-color: #2d2d2d;
+    border: 1px solid #3d3d3d;
+    min-width: 120px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-content button {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: #d4d4d4;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-content button:hover {
+    background-color: #3d3d3d;
+}
+
+@media screen and (max-width: 768px) {
+    .button-group .action-button {
+        display: none;
+    }
+    .dropdown-menu {
+        display: block;
+    }
+    .dropdown-menu:hover .dropdown-content {
+        display: block;
+    }
+}
+
+#historyPanel {
+    display: none;
+    position: absolute;
+    bottom: 50px;
+    right: 10px;
+    width: 300px;
+    max-height: 400px;
+    background-color: #2d2d2d;
+    border: 1px solid #3d3d3d;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 8px;
+    cursor: pointer;
+    color: #d4d4d4;
+}
+
+.history-item:hover {
+    background-color: #3d3d3d;
+}
+
+#searchBox {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #2d2d2d;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+#searchInput {
+    padding: 4px 8px;
+    background: #3d3d3d;
+    border: 1px solid #4d4d4d;
+    color: #d4d4d4;
+    outline: none;
+    border-radius: 2px;
+}
+
+.search-button {
+    margin-left: 4px;
+    background: #0e639c;
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.search-button:hover {
+    background: #1177bb;
+}

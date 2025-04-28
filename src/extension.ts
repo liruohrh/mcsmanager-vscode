@@ -24,9 +24,12 @@ import {
 } from "@/commands/files";
 import {
     copyInstancesCommand,
+    openInstanceCommand,
     openInstanceTerminalCommand,
     refreshInstancesCommand,
+    restartInstanceCommand,
     selectInstanceCommand,
+    stopInstanceCommand,
 } from "@/commands/instance";
 import { openConfigCommand } from "@/commands/common";
 import {
@@ -170,6 +173,25 @@ async function afterLogin() {
         vscode.commands.registerCommand(
             "mcsManager.copyInstance",
             rightClickCommandWrapper(copyInstancesCommand)
+        )
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.openInstance",
+            rightClickCommandWrapper(openInstanceCommand)
+        )
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.stopInstance",
+            rightClickCommandWrapper(stopInstanceCommand)
+        )
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            "mcsManager.restartInstance",
+            rightClickCommandWrapper(restartInstanceCommand)
         )
     );
 

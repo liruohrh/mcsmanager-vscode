@@ -49,6 +49,24 @@
         },
         "commands": [
             {
+                "command": "mcsManager.openInstance",
+                "title": "Open MCS Instance",
+                "category": "MCSManager",
+                "icon": "$(play-circle)"
+            },
+            {
+                "command": "mcsManager.stopInstance",
+                "title": "Stop MCS Instance",
+                "category": "MCSManager",
+                "icon": "$(stop)"
+            },
+            {
+                "command": "mcsManager.restartInstance",
+                "title": "Restart MCS Instance",
+                "category": "MCSManager",
+                "icon": "$(debug-restart)"
+            },
+            {
                 "command": "mcsManager.openInstanceTerminal",
                 "title": "Open MCS Instance Terminal",
                 "category": "MCSManager",
@@ -232,6 +250,21 @@
                     "command": "mcsManager.openInstanceTerminal",
                     "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
                     "group": "opt@1"
+                },
+                {
+                    "command": "mcsManager.openInstance",
+                    "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
+                    "group": "opt@11"
+                },
+                {
+                    "command": "mcsManager.stopInstance",
+                    "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
+                    "group": "opt@21"
+                },
+                {
+                    "command": "mcsManager.restartInstance",
+                    "when": "view == mcsInstanceExplorer && mcsManager.isLoggedIn",
+                    "group": "opt@31"
                 },
                 {
                     "command": "mcsManager.copyInstance",

@@ -1,6 +1,51 @@
 import { APIResp } from "@/types";
 import { axiosMcs } from "./config";
 
+export async function restartInstance({
+    daemonId,
+    uuid,
+}: {
+    daemonId: string;
+    uuid: string;
+}): Promise<APIResp<{ instanceUuid: string }>> {
+    return axiosMcs.post(`/api/protected_instance/restart`, null, {
+        params: {
+            daemonId,
+            uuid,
+        },
+    });
+}
+
+export async function stopInstance({
+    daemonId,
+    uuid,
+}: {
+    daemonId: string;
+    uuid: string;
+}): Promise<APIResp<{ instanceUuid: string }>> {
+    return axiosMcs.post(`/api/protected_instance/stop`, null, {
+        params: {
+            daemonId,
+            uuid,
+        },
+    });
+}
+
+export async function openInstance({
+    daemonId,
+    uuid,
+}: {
+    daemonId: string;
+    uuid: string;
+}): Promise<APIResp<{ instanceUuid: string }>> {
+    return axiosMcs.post(`/api/protected_instance/open`, null, {
+        params: {
+            daemonId,
+            uuid,
+        },
+    });
+}
+
 export async function fetchInstanceTerminalText({
     daemonId,
     uuid,

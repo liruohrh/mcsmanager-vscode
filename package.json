@@ -353,20 +353,21 @@
         "@typescript-eslint/parser": "^8.22.0",
         "@vscode/test-cli": "^0.0.10",
         "@vscode/test-electron": "^2.4.1",
-        "esbuild": "^0.24.2",
-        "eslint": "^9.19.0",
-        "npm-run-all": "^4.1.5",
-        "typescript": "^5.7.3"
-    },
-    "dependencies": {
+        "@xterm/addon-clipboard": "^0.1.0",
         "@xterm/addon-fit": "^0.10.0",
         "@xterm/addon-search": "^0.15.0",
         "@xterm/addon-web-links": "^0.11.0",
         "@xterm/xterm": "^5.5.0",
+        "esbuild": "^0.24.2",
+        "eslint": "^9.19.0",
+        "npm-run-all": "^4.1.5",
+        "typescript": "^5.7.3",
+        "xterm": "^5.3.0"
+    },
+    "dependencies": {
         "axios": "^1.7.9",
         "form-data": "^4.0.1",
         "mcsmanager-vscode": "file:",
-        "socket.io-client": "^4.7.2",
-        "xterm": "^5.3.0"
+        "socket.io-client": "^4.7.2"
     }
 }

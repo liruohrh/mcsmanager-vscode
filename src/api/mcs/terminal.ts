@@ -178,7 +178,9 @@ export const executeSocket = async (config: UseTerminalParams) => {
         uuid: config.instanceId,
     });
     if (res.base.code !== 0) {
-        throw new Error(`无法新建Stream Channel, ${JSON.stringify(res.base)}`);
+        throw new Error(
+            `can not set up a Stream Channel, ${JSON.stringify(res.base)}`
+        );
     }
     const remoteInfo = res.base.data!;
     const addr = `ws://${remoteInfo.addr}`;
@@ -208,11 +210,11 @@ export const executeSocket = async (config: UseTerminalParams) => {
     });
 
     socket.on("instance/stopped", () => {
-        logger.error("instance/stopped");
+        logger.info2("instance/stopped");
     });
 
     socket.on("instance/opened", () => {
-        logger.error("instance/opened");
+        logger.info2("instance/opened");
     });
 
     socket.on("stream/auth", (packet) => {
@@ -225,23 +227,22 @@ export const executeSocket = async (config: UseTerminalParams) => {
     });
 
     socket.on("reconnect", () => {
-        logger.error("[Socket.io] reconnect:", addr);
+        logger.info2("[Socket.io] reconnect:", addr);
         socket?.emit("stream/auth", {
             data: { password },
         });
     });
 
     socket.on("disconnect", () => {
-        logger.error("[Socket.io] disconnect:", addr);
+        logger.info2("[Socket.io] disconnect:", addr);
     });
 
     socket.on("instance/stdout", (packet) => {
         const message = encodeConsoleColor(packet.data.text);
-        logger.error("instance/stdout", message);
         config.onMessage(message);
     });
     socket.on("stream/detail", (packet) => {
-        logger.error("stream/detail", packet?.data);
+        logger.info2("stream/detail", packet?.data);
     });
 
     socket.connect();

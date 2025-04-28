@@ -13,8 +13,8 @@
                 "${workspaceFolder}/test/projects/sample",
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
-            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-            "preLaunchTask": "${defaultBuildTask}"
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+            // "preLaunchTask": "${defaultBuildTask}"
         }
     ]
 }

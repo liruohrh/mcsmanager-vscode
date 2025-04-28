@@ -8,6 +8,12 @@ export const logger = {
     info({ message, args }: LoggerArgs) {
         GlobalVar.outputChannel.info(message, ...(args ?? []));
     },
+    info2(message: string, ...args: any[]) {
+        GlobalVar.outputChannel.info(message, ...args);
+    },
+    error(message: string, ...args: any[]) {
+        GlobalVar.outputChannel.error(message, ...args);
+    },
     terror({
         message,
         args,

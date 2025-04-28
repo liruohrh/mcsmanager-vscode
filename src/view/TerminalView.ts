@@ -145,7 +145,7 @@ export class TerminalView {
 
         const cssUrls = [
             "resources/terminal/index.css",
-            "resources/xterm@5.5.0/css/xterm.css",
+            "resources/xterm/xterm@5.5.0.css",
         ].map((res) =>
             this._panel.webview
                 .asWebviewUri(
@@ -157,7 +157,7 @@ export class TerminalView {
         );
         const jsUrls = [
             "resources/terminal/index.js",
-            "resources/xterm@5.5.0/lib/xterm.js",
+            "resources/xterm/xterm@5.5.0.js",
             "resources/xterm/addon-fit@0.10.0.js",
             "resources/xterm/addon-search@0.15.0.js",
             "resources/xterm/addon-web-links@0.11.0.js",

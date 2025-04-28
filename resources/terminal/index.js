@@ -17,8 +17,8 @@ const webLinksAddon = new WebLinksAddon.WebLinksAddon();
 terminal.loadAddon(fitAddon);
 terminal.loadAddon(searchAddon);
 terminal.loadAddon(webLinksAddon);
-
-terminal.open(document.getElementById("terminal"));
+const terminalContainer = document.getElementById("terminal");
+terminal.open(terminalContainer);
 
 fitAddon.fit();
 
@@ -37,24 +37,6 @@ function closeSearch() {
     searchBox.style.display = "none";
     searchAddon.clearDecorations();
 }
-
-// 添加快捷键支持
-document.addEventListener("keydown", (e) => {
-    // Ctrl+F 打开搜索
-    if (e.ctrlKey && e.key === "f") {
-        e.preventDefault();
-        searchBox.style.display = "block";
-        document.getElementById("searchInput").focus();
-    }
-    // Ctrl+C 或 Ctrl+Insert 复制
-    if ((e.ctrlKey && e.key === "c") || (e.ctrlKey && e.key === "Insert")) {
-        const selection = terminal.getSelection();
-        if (selection) {
-            e.preventDefault();
-            navigator.clipboard.writeText(selection);
-        }
-    }
-});
 
 // 搜索框回车键支持
 document.getElementById("searchInput").addEventListener("keydown", (e) => {

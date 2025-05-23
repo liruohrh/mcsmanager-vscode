@@ -138,13 +138,13 @@ export function encodeConsoleColor(text: string) {
                 "(" + RegExpStringArr[k][y].replace(/ /gim, "&nbsp;") + ")",
                 "igm"
             );
-            if (k === "0")
+            if (k === "0") {
                 //blue
                 text = text.replace(
                     reg,
                     TERM_COLOR.TERM_TEXT_BLUE + "$1" + TERM_COLOR.TERM_RESET
                 );
-            if (k === "1")
+            } else if (k === "1") {
                 //green
                 text = text.replace(
                     reg,
@@ -152,18 +152,19 @@ export function encodeConsoleColor(text: string) {
                         "$1" +
                         TERM_COLOR.TERM_RESET
                 );
-            if (k === "2")
+            } else if (k === "2") {
                 //red
                 text = text.replace(
                     reg,
                     TERM_COLOR.TERM_TEXT_RED + "$1" + TERM_COLOR.TERM_RESET
                 );
-            if (k === "3")
+            } else if (k === "3") {
                 //yellow
                 text = text.replace(
                     reg,
                     TERM_COLOR.TERM_TEXT_GOLD + "$1" + TERM_COLOR.TERM_RESET
                 );
+            }
         }
     }
     // line ending symbol substitution

@@ -44,6 +44,7 @@ import {
     CONTEXT_HAS_SELECTED_MULTI_FILE,
     CONTEXT_HAS_SELECTED_SINGLE_FILE,
 } from "./utils/constant";
+import { onConfigChange } from "./utils/config";
 
 export function activate(context: vscode.ExtensionContext) {
     GlobalVar.context = context;
@@ -63,6 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
     //     );
     GlobalVar.mcsService.autoLogin().finally(async () => {
         await afterLogin();
+        context.subscriptions.push(onConfigChange());
     });
 }
 

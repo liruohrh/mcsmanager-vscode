@@ -183,13 +183,21 @@ export const executeSocket = async (config: UseTerminalParams) => {
         );
     }
     const remoteInfo = res.base.data!;
-    const addr = `ws://${remoteInfo.addr}`;
+    const addr =
+        remoteInfo.addr.includes("ws://") || remoteInfo.addr.includes("wss://")
+            ? remoteInfo.addr
+            : `ws://${remoteInfo.addr}`;
     const password = remoteInfo.password;
-
+    const socketIoPath =
+        (!!remoteInfo.prefix ? removeTrail(remoteInfo.prefix, "/") : "") +
+        "/socket.io";
+    logger.info2(
+        `remoteInfo: `,
+        JSON.stringify(remoteInfo),
+        `socketIoPath=${socketIoPath}`
+    );
     const socket = io(addr, {
-        path:
-            (!!remoteInfo.prefix ? removeTrail(remoteInfo.prefix, "/") : "") +
-            "/socket.io",
+        path: socketIoPath,
         multiplex: false,
         reconnectionDelayMax: 1000 * 10,
         timeout: 1000 * 30,

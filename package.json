@@ -5,7 +5,7 @@
     "private": true,
     "repository": "https://github.com/liruohrh/mcsmanager-vscode",
     "displayName": "mcsmanager-vscode",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "icon": "resources/logo.png",
     "description": "mcsmanager in vscode",
     "engines": {

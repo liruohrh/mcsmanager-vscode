@@ -1,0 +1,35 @@
+name: all
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    actions: write
+
+jobs:
+    trigger_all:
+        name: Build & Release & Publish
+        runs-on: ubuntu-latest
+        steps:
+            - name: Dispatch build.yml
+              uses: peter-evans/workflow-dispatch@v2
+              with:
+                  workflow: build.yml
+                  ref: main
+                  repository: ${{ github.repository }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
+            - name: Dispatch release.yml
+              uses: peter-evans/workflow-dispatch@v2
+              with:
+                  workflow: release.yml
+                  ref: main
+                  repository: ${{ github.repository }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
+            - name: Dispatch publish.yml
+              uses: peter-evans/workflow-dispatch@v2
+              with:
+                  workflow: publish.yml
+                  ref: main
+                  repository: ${{ github.repository }}
+                  token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,36 @@
+name: Build
+
+on:
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Build & Package
+              run: vsce package
+
+            - name: get_package_name
+              id: get_package_name
+              run: |
+                  value=$(node -pe "const p = require('./package.json'); p.name + '-' + p.version + '.vsix'")
+                  echo "value=$value" >> $GITHUB_OUTPUT
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build_output
+                  path: "${{steps.get_package_name.outputs.value}}"
+                  retention-days: 1

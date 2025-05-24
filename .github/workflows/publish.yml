@@ -1,0 +1,49 @@
+name: Publish
+
+on:
+    workflow_dispatch:
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - name: get_package_name
+              id: get_package_name
+              run: |
+                  value=$(node -pe "const p = require('./package.json'); p.name + '-' + p.version + '.vsix'")
+                  echo "value=$value" >> $GITHUB_OUTPUT
+
+            - name: Download artifact from previous workflow
+              uses: dawidd6/action-download-artifact@v2
+              with:
+                  workflow: build.yml
+                  workflow_conclusion: success
+                  name: build_output
+                  path: ./artifacts
+
+            - name: Install vsce & ovsx
+              run: |
+                  # 试试全局安装（大多数 runner 允许）
+                  npm install -g vsce ovsx || true
+                  # 如果全局命令不可用，则本地安装
+                  if ! command -v vsce >/dev/null; then
+                    npm install vsce ovsx --no-save
+                    echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+                  fi
+
+            - name: Publish with vsce
+              run: |
+                  vsce publish --packagePath ./artifacts/${{ steps.get_package_name.outputs.value }} --pat ${{ secrets.VSCE_TOKEN }}
+
+            - name: Publish with ovsx
+              run: |
+                  ovsx publish ./artifacts/${{  steps.get_package_name.outputs.value }} --pat ${{ secrets.OVSX_TOKEN }}

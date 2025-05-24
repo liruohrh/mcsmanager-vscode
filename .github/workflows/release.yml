@@ -1,0 +1,52 @@
+name: Release
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Get latest tag
+              id: get_latest_tag
+              uses: actions-ecosystem/action-get-latest-tag@v1
+
+            - name: Download artifact from previous workflow
+              uses: dawidd6/action-download-artifact@v2
+              with:
+                  workflow: build.yml
+                  workflow_conclusion: success
+                  name: build_output
+                  path: ./artifacts
+
+            # auto find release notes in CHANGELOG.md, start at `# tag`（not include `# tag`）， stop at `# next tag`
+            - name: Extract release notes from CHANGELOG.md
+              id: extract_notes
+              run: |
+                  TAG="${{ steps.get_latest_tag.outputs.tag }}"
+                  BODY=$(awk -v tag="$TAG" '
+                    BEGIN { found=0 }
+                    $0 ~ "^# "tag"" { found=1; next }
+                    found && /^#\s.+/ { exit }
+                    found { print }
+                  ' CHANGELOG.md)
+
+                  echo "content<<EOF" >> $GITHUB_OUTPUT
+                  echo "$BODY" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+            - name: Create GitHub Release (Draft)
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ steps.get_latest_tag.outputs.tag }}
+                  name: ${{ steps.get_latest_tag.outputs.tag }}
+                  body: ${{ steps.extract_notes.outputs.content }}
+                  draft: true
+                  files: "./artifacts/*.vsix"

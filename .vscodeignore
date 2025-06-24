@@ -1,3 +1,4 @@
+.github/
 docs/MCSManager.api.md
 docs/MCSManager.openapi.json
 test/**

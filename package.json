@@ -5,7 +5,7 @@
     "private": true,
     "repository": "https://github.com/liruohrh/mcsmanager-vscode",
     "displayName": "mcsmanager-vscode",
-    "version": "0.1.3",
+    "version": "0.2.0",
     "icon": "resources/logo.png",
     "description": "mcsmanager in vscode",
     "engines": {
@@ -355,11 +355,26 @@
             "properties": {
                 "mcsManager.urlPrefix": {
                     "type": "string",
-                    "description": "MCSManager服务urlPrefix"
+                    "description": "MCSManager Server urlPrefix"
                 },
                 "mcsManager.apiKey": {
                     "type": "string",
-                    "description": "API访问密钥"
+                    "description": "MCSManger API"
+                },
+                "mcsManager.networkLibrary": {
+                    "type": "string",
+                    "enum": [
+                        "axios-fetch",
+                        "axios-http",
+                        "fetch"
+                    ],
+                    "default": "axios",
+                    "description": "Choose the network library for requests."
+                },
+                "mcsManager.sslVerify": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable or disable SSL certificate verification."
                 }
             }
         }

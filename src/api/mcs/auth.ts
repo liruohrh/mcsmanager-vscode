@@ -1,8 +1,8 @@
-import { axiosMcs } from "./config";
+import { request } from "./conf";
 import { APIResp, MCSLoginUser } from "@/types";
 
 export async function getLoginUser(): Promise<APIResp<MCSLoginUser>> {
-    return axiosMcs.get(`/api/auth`, {
+    return request('get', `/api/auth`, {
         params: {
             advanced: true
         },
@@ -20,9 +20,11 @@ export async function login({
     username: string;
     password: string;
 }): Promise<APIResp<string>> {
-    return axiosMcs.post(`/api/auth/login`, {
-        username,
-        password
+    return request('post', `/api/auth/login`, {
+        data: {
+            username,
+            password
+        }
     });
 }
 
@@ -31,7 +33,7 @@ export async function logout({
 }: {
     token: string;
 }): Promise<APIResp<boolean>> {
-    return axiosMcs.get(`/api/auth/logout`, {
+    return request('get', `/api/auth/logout`, {
         params: {
             token: token
         }

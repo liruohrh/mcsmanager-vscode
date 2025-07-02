@@ -14,13 +14,13 @@ import {
     uploadFile,
     downloadFile,
     moveFile,
-    copyFile
+    copyFile,
 } from "@/api/mcs/file";
 import {
     STATE_LOGIN_USER,
     STATE_SELECTED_INSTANCE,
     CONTEXT_IS_LOGGED_IN,
-    CONTEXT_HAS_SELECTED_INSTANCE
+    CONTEXT_HAS_SELECTED_INSTANCE,
 } from "@/utils/constant";
 import {
     MCSLoginUser,
@@ -28,7 +28,7 @@ import {
     MCSFileListReq,
     MCSFileItem,
     PageResp,
-    MCSInstance
+    MCSInstance,
 } from "@/types";
 import { defaultFileErrorGetter, logger } from "@/utils/log";
 import { getLoginUser } from "@/api/mcs/auth";
@@ -46,23 +46,23 @@ export class McsService {
         for (const targetPath of targetPaths) {
             targets.push([
                 targetPath,
-                path.posix.join(distDirPath, path.posix.basename(targetPath))
+                path.posix.join(distDirPath, path.posix.basename(targetPath)),
             ]);
         }
         const resp = await copyFile({
             daemonId: instance.daemonId,
             uuid: instance.instanceUuid,
-            targets
+            targets,
         });
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to copy file ${JSON.stringify(resp.base)}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         logger.info({
             message: `Success to copy Files to ${distDirPath}`,
-            args: [targets]
+            args: [targets],
         });
     }
 
@@ -71,24 +71,24 @@ export class McsService {
         if (oldPath === newPath) {
             throw logger.terror({
                 message: `Failed to rename file, newPath(${newPath}) is equal newPath(${oldPath})`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         const resp = await moveFile({
             daemonId: instance.daemonId,
             uuid: instance.instanceUuid,
-            targets: [[oldPath, newPath]]
+            targets: [[oldPath, newPath]],
         });
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to rename file ${oldPath} to ${newPath} ${JSON.stringify(
                     resp.base
                 )}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         logger.info({
-            message: `Success to move ${oldPath} to ${newPath}`
+            message: `Success to move ${oldPath} to ${newPath}`,
         });
     }
 
@@ -104,29 +104,29 @@ export class McsService {
         for (const oldPath of oldPaths) {
             targets.push([
                 oldPath,
-                path.posix.join(targetDirPath, path.posix.basename(oldPath))
+                path.posix.join(targetDirPath, path.posix.basename(oldPath)),
             ]);
         }
         const resp = await moveFile({
             daemonId: instance.daemonId,
             uuid: instance.instanceUuid,
-            targets
+            targets,
         });
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to move file ${JSON.stringify(resp.base)}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         logger.info({
             message: `Success to move Files to ${targetDirPath}`,
-            args: [targets]
+            args: [targets],
         });
     }
 
     public async downloadFile({
         filepath,
-        distpath
+        distpath,
     }: {
         filepath: string;
         distpath?: string;
@@ -138,14 +138,14 @@ export class McsService {
         const resp = await getFileConfig({
             daemonId,
             uuid,
-            fileName: filepath
+            fileName: filepath,
         });
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to get download file config, ${JSON.stringify(
                     resp.base
                 )}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         let addr = resp.base.data!.addr;
@@ -155,14 +155,14 @@ export class McsService {
         const resp2 = await downloadFile({
             password: resp.base.data!.password,
             addr: addr,
-            downloadFilename: path.posix.basename(filepath)
+            downloadFilename: path.posix.basename(filepath),
         });
         if (resp2.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to download file, ${JSON.stringify(
                     resp2.base
                 )}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         if (distpath) {
@@ -172,7 +172,7 @@ export class McsService {
         logger.info({
             message: `Success to  download File ${filepath}${
                 distpath ? ` to ${distpath}` : ""
-            }`
+            }`,
         });
         return resp2.base.data!;
     }
@@ -184,7 +184,7 @@ export class McsService {
     public async uploadFile({
         uploadDir,
         filepath,
-        content
+        content,
     }: {
         uploadDir: string;
         filepath: string;
@@ -202,7 +202,7 @@ export class McsService {
                 message: `Failed to get upload file config, ${JSON.stringify(
                     resp.base
                 )}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         // 获取文件配置中的addr
@@ -214,21 +214,21 @@ export class McsService {
             password: resp.base.data!.password,
             addr,
             filepath: filepath,
-            file: content
+            file: content,
         });
         if (resp2.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to upload file, ${JSON.stringify(resp2.base)}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         logger.info({
-            message: `Success to upload File ${filepath} to ${uploadDir}`
+            message: `Success to upload File ${filepath} to ${uploadDir}`,
         });
     }
     public async mkFile({
         isDir = false,
-        target
+        target,
     }: {
         isDir?: boolean;
         target: string;
@@ -248,11 +248,11 @@ export class McsService {
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to create dir, ${JSON.stringify(resp.base)}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         logger.info({
-            message: `Success to mkdir ${target}`
+            message: `Success to mkdir ${target}`,
         });
         return resp.base.data!;
     }
@@ -261,16 +261,16 @@ export class McsService {
         const resp = await createFile({
             daemonId: instance.daemonId,
             uuid: instance.instanceUuid,
-            target
+            target,
         });
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to create file, ${JSON.stringify(resp.base)}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         logger.info({
-            message: `Success to mk file ${target}`
+            message: `Success to mk file ${target}`,
         });
         return resp.base.data!;
     }
@@ -280,17 +280,17 @@ export class McsService {
         const resp = await deleteFiles({
             daemonId: instance.daemonId,
             uuid: instance.instanceUuid,
-            targets
+            targets,
         });
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to delete file, ${JSON.stringify(resp.base)}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         logger.info({
             message: `Success to delete files`,
-            args: [targets]
+            args: [targets],
         });
         return resp.base.data!;
     }
@@ -303,16 +303,16 @@ export class McsService {
             daemonId: instance.daemonId,
             uuid: instance.instanceUuid,
             target,
-            text
+            text,
         });
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to update file, ${JSON.stringify(resp.base)}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         logger.info({
-            message: `Success to update ${target}`
+            message: `Success to update ${target}`,
         });
         return resp.base.data!;
     }
@@ -322,19 +322,19 @@ export class McsService {
         const resp = await getFileContent({
             daemonId: instance.daemonId,
             uuid: instance.instanceUuid,
-            target
+            target,
         });
         if (resp.base.code !== 0) {
             throw logger.terror({
                 message: `Failed to  read file, ${JSON.stringify(resp.base)}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         if (resp.base.data! === true) {
             return "";
         }
         logger.info({
-            message: `Success to get content of ${target}`
+            message: `Success to get content of ${target}`,
         });
         return resp.base.data as string;
     }
@@ -361,7 +361,7 @@ export class McsService {
                     const resp = await getFileList({
                         daemonId: instance.daemonId,
                         uuid: instance.instanceUuid,
-                        ...params
+                        ...params,
                     });
                     if (resp.base.code !== 0) {
                         if (
@@ -373,21 +373,22 @@ export class McsService {
                                 }th time, ${
                                     resp.base.message
                                 }, ${JSON.stringify(resp.base)}`,
-                                errorGetter: vscode.FileSystemError.FileNotFound
+                                errorGetter:
+                                    vscode.FileSystemError.FileNotFound,
                             });
                         }
                         throw logger.terror({
                             message: `Failed to get the file list for the ${
                                 i + 1
                             }th time, ${JSON.stringify(resp.base)}`,
-                            errorGetter: defaultFileErrorGetter
+                            errorGetter: defaultFileErrorGetter,
                         });
                     }
 
                     // 处理每个文件项的path
                     const items = resp.base.data!.items.map((item) => ({
                         ...item,
-                        path: path.posix.join(params.target, item.name)
+                        path: path.posix.join(params.target, item.name),
                     }));
                     fileItems.push(...items);
                     if (resp.base.data?.total === fileItems.length) {
@@ -396,7 +397,7 @@ export class McsService {
                                 i + 1
                             } times to get the file list of ${
                                 params.target
-                            }, a total of ${fileItems.length} files`
+                            }, a total of ${fileItems.length} files`,
                         });
                         break;
                     }
@@ -405,7 +406,7 @@ export class McsService {
                     data: fileItems,
                     total: fileItems.length,
                     page: 0,
-                    pageSize: fileItems.length
+                    pageSize: fileItems.length,
                 };
             })
             .finally(() => {
@@ -421,7 +422,7 @@ export class McsService {
         const resp = await getFileList({
             ...params,
             daemonId: instance.daemonId,
-            uuid: instance.instanceUuid
+            uuid: instance.instanceUuid,
         });
         if (resp.base.code !== 0) {
             if (resp.base.message?.includes("Illegal access path")) {
@@ -429,28 +430,28 @@ export class McsService {
                     message: `Failed to get the file list, ${
                         resp.base.message
                     }, ${JSON.stringify(resp.base)}`,
-                    errorGetter: vscode.FileSystemError.FileNotFound
+                    errorGetter: vscode.FileSystemError.FileNotFound,
                 });
             }
             throw logger.terror({
                 message: `Failed to get the file list, ${JSON.stringify(
                     resp.base
                 )}`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
 
         // 处理每个文件项的path
         const items = resp.base.data!.items.map((item) => ({
             ...item,
-            path: path.posix.join(params.target, item.name)
+            path: path.posix.join(params.target, item.name),
         }));
         logger.info({
-            message: `Success to get the file list of ${params.target}, a total of ${resp.base.data?.items?.length} files`
+            message: `Success to get the file list of ${params.target}, a total of ${resp.base.data?.items?.length} files`,
         });
         return {
             ...resp.base.data!,
-            items
+            items,
         };
     }
     /**
@@ -463,11 +464,13 @@ export class McsService {
         const resp = await getLoginUser();
         if (resp.base.code !== 0) {
             throw logger.terror({
-                message: `Failed to get LoginUser, ${JSON.stringify(resp.base)}`
+                message: `Failed to get LoginUser, ${JSON.stringify(
+                    resp.base
+                )}`,
             });
         }
         logger.info({
-            message: `Success to get LoginUser`
+            message: `Success to get LoginUser`,
         });
         return resp.base.data!;
     }
@@ -475,21 +478,21 @@ export class McsService {
     public async autoLogin(): Promise<void> {
         if (!Config.urlPrefix || !Config.apiKey) {
             logger.info({
-                message: "autoLogin: fail for wrong config"
+                message: "autoLogin: fail for wrong config",
             });
             return;
         }
         const loginUser = await this.getLoginUser();
         await this.onLogin(loginUser!);
         logger.info({
-            message: "autoLogin: Success"
+            message: "autoLogin: Success",
         });
     }
 
     public async login(): Promise<void> {
         if (!Config.urlPrefix || !Config.apiKey) {
             throw logger.terror({
-                message: `Failed to Login, require urlPrefix | apiKey`
+                message: `Failed to Login, require urlPrefix | apiKey`,
             });
         }
         await this.onLogin(await this.getLoginUser());
@@ -521,7 +524,7 @@ export class McsService {
                     true
                 );
                 logger.info({
-                    message: `OnLogin: recover old selected instance, ${instance.nickname}`
+                    message: `OnLogin: recover old selected instance, ${instance.nickname}`,
                 });
                 return;
             }
@@ -532,12 +535,12 @@ export class McsService {
         if (!Config.urlPrefix) {
             throw logger.terror({
                 message: `Failed to logout, require urlPrefix`,
-                errorGetter: defaultFileErrorGetter
+                errorGetter: defaultFileErrorGetter,
             });
         }
         await this.clearLoginData();
         logger.info({
-            message: "Success to logout"
+            message: "Success to logout",
         });
     }
     /**
@@ -577,7 +580,7 @@ export class McsService {
         if (!instance) {
             throw logger.terror({
                 message: "require select instance",
-                errorGetter: vscode.FileSystemError.NoPermissions
+                errorGetter: vscode.FileSystemError.NoPermissions,
             });
         }
         return instance;

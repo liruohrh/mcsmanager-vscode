@@ -15,12 +15,20 @@ export const Config: ServiceConfig = {
     get apiKey(): string {
         return getConfig().get<string>("apiKey") || "";
     },
+    get networkLibrary(): string {
+        return getConfig().get<string>("networkLibrary") || "axios";
+    },
+    get sslVerify(): boolean {
+        // Default to true for SSL verification
+        const val = getConfig().get<boolean>("sslVerify");
+        return val === undefined ? true : val;
+    },
 };
 
 export function onConfigChange() {
     return vscode.workspace.onDidChangeConfiguration(async (e) => {
         if (e.affectsConfiguration(CONFIG_SECTION)) {
-            logger.info2(`${CONFIG_SECTION} config changed, relogin`);
+            logger.info2(`${CONFIG_SECTION} config changed, relogining`);
             await GlobalVar.mcsService.autoLogin();
             GlobalVar.instanceTreeDataProvider.refresh();
         }

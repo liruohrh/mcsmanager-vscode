@@ -1,5 +1,5 @@
 import { APIResp } from "@/types";
-import { axiosMcs } from "./config";
+import { request } from "./conf";
 
 export async function restartInstance({
     daemonId,
@@ -8,7 +8,7 @@ export async function restartInstance({
     daemonId: string;
     uuid: string;
 }): Promise<APIResp<{ instanceUuid: string }>> {
-    return axiosMcs.post(`/api/protected_instance/restart`, null, {
+    return request('post', `/api/protected_instance/restart`, {
         params: {
             daemonId,
             uuid,
@@ -23,7 +23,7 @@ export async function stopInstance({
     daemonId: string;
     uuid: string;
 }): Promise<APIResp<{ instanceUuid: string }>> {
-    return axiosMcs.post(`/api/protected_instance/stop`, null, {
+    return request('post', `/api/protected_instance/stop`, {
         params: {
             daemonId,
             uuid,
@@ -38,7 +38,7 @@ export async function openInstance({
     daemonId: string;
     uuid: string;
 }): Promise<APIResp<{ instanceUuid: string }>> {
-    return axiosMcs.post(`/api/protected_instance/open`, null, {
+    return request('post', `/api/protected_instance/open`, {
         params: {
             daemonId,
             uuid,
@@ -55,7 +55,7 @@ export async function fetchInstanceTerminalText({
     uuid: string;
     size?: number;
 }): Promise<APIResp<string>> {
-    return axiosMcs.get(`/api/protected_instance/outputlog`, {
+    return request('get', `/api/protected_instance/outputlog`, {
         params: {
             daemonId,
             uuid,
@@ -71,7 +71,7 @@ export async function setUpTerminalStreamChannel({
     daemonId: string;
     uuid: string;
 }): Promise<APIResp<{ password: string; addr: string; prefix: string }>> {
-    return axiosMcs.post(`/api/protected_instance/stream_channel`, undefined, {
+    return request('post', `/api/protected_instance/stream_channel`, {
         params: {
             daemonId,
             uuid,

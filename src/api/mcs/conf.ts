@@ -3,7 +3,7 @@ import axios from "axios";
 import { axiosMcs } from "./axios";
 import { fetchMcs } from "./fetch";
 import * as vscode from "vscode";
-import { BaseResp } from "@/types";
+import { APIResp, MCSBaseResp } from "@/types";
 
 export interface IOptions {
     reqBodyType?: "json" | "text" | "bytes";
@@ -86,13 +86,15 @@ export async function request<B1 = any, B2 = any>(
     }
 }
 
-function handleResponse(resp: any) {
+function handleResponse(resp: any): APIResp<any> {
     const ct = resp.headers?.["content-type"]?.toString();
     if (
         ct !== "application/octet-stream" &&
-        (ct?.includes("json") || resp.data instanceof Object)
+        (ct?.includes("json") ||
+            //mcs api基本响应text/plain, axios会自动解析，因此如果text/plain是JSON，则这个data就是对象
+            resp.data instanceof Object)
     ) {
-        const mcsResp = resp.data;
+        const mcsResp = resp.data as MCSBaseResp<any>;
         let code = mcsResp.status === 200 ? 0 : mcsResp.status;
         return {
             base: {
@@ -102,8 +104,10 @@ function handleResponse(resp: any) {
             },
             response: resp,
             status: resp.status,
+            contentType: ct,
         };
     } else {
+        //二进制数据或者纯文本
         let code = resp.status === 200 ? 0 : resp.status;
         return {
             base: {
@@ -113,29 +117,48 @@ function handleResponse(resp: any) {
             },
             response: resp,
             status: resp.status,
+            contentType: ct,
         };
     }
 }
 
-async function handleFetchResponse(res: Response) {
-    const ct = res.headers.get("content-type") || "";
-    let data: any;
-    if (!ct || ct.includes("json")) {
-        data = await res.json();
-    } else if (ct.includes("text")) {
-        data = await res.text();
+async function handleFetchResponse(resp: Response): Promise<APIResp<any>> {
+    const ct = resp.headers.get("content-type") || "";
+    let data;
+    if (
+        ct !== "application/octet-stream" &&
+        (ct?.includes("json") || ct.includes("text"))
+    ) {
+        try {
+            const mcsResp = (await resp.json()) as MCSBaseResp<any>;
+            let code = mcsResp.status === 200 ? 0 : mcsResp.status;
+            return {
+                base: {
+                    code: code,
+                    data: code === 0 ? mcsResp.data : undefined,
+                    message: code !== 0 ? mcsResp.data : undefined,
+                },
+                response: resp,
+                status: resp.status,
+                contentType: ct,
+            };
+        } catch (_) {
+            data = await resp.text();
+        }
     } else {
-        data = await res.arrayBuffer();
+        data = await resp.arrayBuffer();
+        data = new Uint8Array(data);
     }
-    let code = data && data.status === 200 ? 0 : data?.status ?? res.status;
+    let code = resp.status === 200 ? 0 : resp.status;
     return {
         base: {
             code: code,
-            data: code === 0 ? data?.data : undefined,
-            message: code !== 0 ? data?.data : undefined,
+            data: code === 0 ? data : undefined,
+            message: code !== 0 ? resp.statusText : undefined,
         },
-        response: res,
-        status: res.status,
+        response: resp,
+        status: resp.status,
+        contentType: ct,
     };
 }
 

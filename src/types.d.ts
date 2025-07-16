@@ -12,8 +12,15 @@ export interface ServiceConfig {
 export interface APIResp<T> {
     base: BaseResp<T>;
     error?: AxiosError;
-    response?: AxiosResponse;
+    response?: AxiosResponse | Response;
     status: number;
+    contentType: string;
+}
+
+export interface MCSBaseResp<T> {
+    status: number;
+    data?: T;
+    message?: string;
 }
 
 export interface BaseResp<T> {

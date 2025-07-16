@@ -1,3 +1,9 @@
+# 0.2.1 --- 2025/7/16
+
+- 修复fetch的响应处理没有正确考虑到mcs响应结构的问题
+
+
+
 # 0.2.0 --- 2025/7/2
 
 - 添加axios-fetch、axios-http、fetch网络库选项以及是否校验SSL选项来排查 [#1](https://github.com/liruohrh/mcsmanager-vscode/issues/1) 网络问题

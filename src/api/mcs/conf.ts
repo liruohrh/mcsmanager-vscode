@@ -1,9 +1,11 @@
 import { Config } from "@/utils/config";
-import axios from "axios";
 import { axiosMcs } from "./axios";
 import { fetchMcs } from "./fetch";
 import * as vscode from "vscode";
 import { APIResp, MCSBaseResp } from "@/types";
+import FormData from "form-data";
+import type { ResponseType } from "axios";
+import type { Response } from "node-fetch";
 
 export interface IOptions {
     reqBodyType?: "json" | "text" | "bytes";
@@ -46,16 +48,19 @@ export async function request<B1 = any, B2 = any>(
     const responseType = options.responseType;
     const data = options.data;
     if (Config.networkLibrary.startsWith("axios-")) {
+        const adapter = !Config.networkLibrary
+            ? undefined
+            : Config.networkLibrary.replace("axios-", "");
         try {
             const resp = await axiosMcs.request({
-                adapter: Config.networkLibrary.replace("axios-", ""),
+                adapter,
                 method,
                 url,
                 baseURL,
                 headers,
                 params,
                 data,
-                responseType: responseType as axios.ResponseType,
+                responseType: responseType as ResponseType,
             });
             return handleResponse(resp) as B2;
         } catch (error) {
@@ -125,12 +130,11 @@ function handleResponse(resp: any): APIResp<any> {
 async function handleFetchResponse(resp: Response): Promise<APIResp<any>> {
     const ct = resp.headers.get("content-type") || "";
     let data;
-    if (
-        ct !== "application/octet-stream" &&
-        (ct?.includes("json") || ct.includes("text"))
-    ) {
+    if (ct?.includes("json") || ct.includes("text")) {
+        //json数据或者文本（因为mcsmanger数据几乎都是text而不是json）
+        data = await resp.text();
         try {
-            const mcsResp = (await resp.json()) as MCSBaseResp<any>;
+            const mcsResp = JSON.parse(data) as MCSBaseResp<any>;
             let code = mcsResp.status === 200 ? 0 : mcsResp.status;
             return {
                 base: {
@@ -142,9 +146,7 @@ async function handleFetchResponse(resp: Response): Promise<APIResp<any>> {
                 status: resp.status,
                 contentType: ct,
             };
-        } catch (_) {
-            data = await resp.text();
-        }
+        } catch (_) {}
     } else {
         data = await resp.arrayBuffer();
         data = new Uint8Array(data);
@@ -154,7 +156,8 @@ async function handleFetchResponse(resp: Response): Promise<APIResp<any>> {
         base: {
             code: code,
             data: code === 0 ? data : undefined,
-            message: code !== 0 ? resp.statusText : undefined,
+            message:
+                code !== 0 ? data?.toString() ?? resp.statusText : undefined,
         },
         response: resp,
         status: resp.status,
@@ -199,7 +202,7 @@ function handleError(error: any) {
         }
         return {
             base: {
-                code: -1,
+                code: error.response.status,
                 message: `${error.code} ${body}`,
             },
             error: error,

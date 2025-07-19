@@ -61,7 +61,14 @@ export async function downloadFile({
     password,
     addr,
     downloadFilename,
-}: MCSFileConfig & { downloadFilename: string }): Promise<APIResp<Uint8Array>> {
+}: MCSFileConfig & { downloadFilename: string }): Promise<
+    APIResp<
+        // fetch
+        | ArrayBuffer
+        //http
+        | Uint8Array
+    >
+> {
     return request("get", `/download/${password}/${downloadFilename}`, {
         baseURL: `${
             Config.urlPrefix.startsWith("https") ? "https" : "http"

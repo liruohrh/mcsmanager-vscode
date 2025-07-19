@@ -165,8 +165,9 @@ export class McsService {
                 errorGetter: defaultFileErrorGetter,
             });
         }
+        const data = new Uint8Array(resp2.base.data!);
         if (distpath) {
-            fs.writeFileSync(distpath, resp2.base.data!);
+            fs.writeFileSync(distpath, data);
             return;
         }
         logger.info({
@@ -174,7 +175,7 @@ export class McsService {
                 distpath ? ` to ${distpath}` : ""
             }`,
         });
-        return resp2.base.data!;
+        return data;
     }
 
     /**

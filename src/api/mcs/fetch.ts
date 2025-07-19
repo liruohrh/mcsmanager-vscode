@@ -1,8 +1,13 @@
 import { Config } from "@/utils/config";
 import https from "https";
+import fetch from "node-fetch";
 
 export async function fetchMcs(url: string, options: RequestInit = {}) {
-    // Only add agent if running in Node.js
-    // @ts-ignore: agent is supported in node-fetch
-    return fetch(url, { ...options, agent: new https.Agent({ rejectUnauthorized: Config.sslVerify }) });
+    // @ts-ignore
+    return fetch(url, {
+        ...options,
+        agent: !url.startsWith("https")
+            ? undefined
+            : new https.Agent({ rejectUnauthorized: Config.sslVerify }),
+    });
 }

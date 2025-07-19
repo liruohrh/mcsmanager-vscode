@@ -93,10 +93,7 @@ export async function uploadFile({
         baseURL: `${
             Config.urlPrefix.startsWith("https") ? "https" : "http"
         }://${addr}/`,
-        headers: {
-            ...formData.getHeaders(),
-            "Content-Type": "multipart/form-data"
-        },
+        headers: formData.getHeaders(),
         data: formData
     });
 }

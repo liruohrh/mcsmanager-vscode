@@ -368,7 +368,7 @@
                         "axios-http",
                         "fetch"
                     ],
-                    "default": "axios",
+                    "default": "axios-http",
                     "description": "Choose the network library for requests."
                 },
                 "mcsManager.sslVerify": {
@@ -416,6 +416,7 @@
         "axios": "^1.7.9",
         "form-data": "^4.0.1",
         "mcsmanager-vscode": "file:",
+        "node-fetch": "^3.3.2",
         "socket.io-client": "^4.7.2"
     }
 }

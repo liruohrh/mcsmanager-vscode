@@ -1,4 +1,5 @@
 import { AxiosError, AxiosResponse } from "axios";
+import type { Response } from "node-fetch";
 
 export interface ServiceConfig {
     readonly urlPrefix: string;

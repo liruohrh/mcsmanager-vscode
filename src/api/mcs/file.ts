@@ -8,65 +8,65 @@ import {
     MCSLoginUser,
     MCSFileListPageResp,
     MCSFileListReq,
-    MCSFileConfig
+    MCSFileConfig,
 } from "@/types";
 
 export async function copyFile({
     daemonId,
     uuid,
-    targets
+    targets,
 }: {
     daemonId: string;
     uuid: string;
     targets: string[][];
 }): Promise<APIResp<boolean>> {
-    return request('post', `/api/files/copy`, {
+    return request("post", `/api/files/copy`, {
         params: {
             daemonId,
-            uuid
+            uuid,
         },
         headers: {
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
         },
         data: {
-            targets
-        }
+            targets,
+        },
     });
 }
 
 export async function moveFile({
     daemonId,
     uuid,
-    targets
+    targets,
 }: {
     daemonId: string;
     uuid: string;
     targets: string[][];
 }): Promise<APIResp<boolean>> {
-    return request('put', `/api/files/move`, {
+    return request("put", `/api/files/move`, {
         params: {
             daemonId,
-            uuid
+            uuid,
         },
         headers: {
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
         },
         data: {
-            targets
-        }
+            targets,
+        },
     });
 }
 
 export async function downloadFile({
     password,
     addr,
-    downloadFilename
+    downloadFilename,
 }: MCSFileConfig & { downloadFilename: string }): Promise<APIResp<Uint8Array>> {
-    return request('get', `/download/${password}/${downloadFilename}`, {
+    return request("get", `/download/${password}/${downloadFilename}`, {
         baseURL: `${
             Config.urlPrefix.startsWith("https") ? "https" : "http"
         }://${addr}/`,
-        responseType: "arraybuffer"
+        responseType: "arraybuffer",
     });
 }
 
@@ -74,7 +74,7 @@ export async function uploadFile({
     password,
     addr,
     file,
-    filepath
+    filepath,
 }: MCSFileConfig & {
     file?: fs.ReadStream | Uint8Array;
     filepath: string;
@@ -83,18 +83,18 @@ export async function uploadFile({
     let options;
     if (file) {
         options = {
-            filename: path.posix.basename(filepath)
+            filename: path.posix.basename(filepath),
         };
     } else {
         file = fs.createReadStream(filepath);
     }
     formData.append("file", file, options);
-    return request('post', `/upload/${password}`, {
+    return request("post", `/upload/${password}`, {
         baseURL: `${
             Config.urlPrefix.startsWith("https") ? "https" : "http"
         }://${addr}/`,
         headers: formData.getHeaders(),
-        data: formData
+        data: formData,
     });
 }
 
@@ -108,7 +108,7 @@ export async function getFileConfig({
     daemonId,
     uuid,
     fileName,
-    uploadDir
+    uploadDir,
 }: {
     daemonId: string;
     uuid: string;
@@ -117,81 +117,81 @@ export async function getFileConfig({
 }): Promise<APIResp<MCSFileConfig>> {
     let lastPath = fileName ? "download" : "upload";
     let paramName = fileName ? "file_name" : "upload_dir";
-    return request('post', `/api/files/${lastPath}`, {
+    return request("post", `/api/files/${lastPath}`, {
         params: {
             daemonId,
             uuid,
-            [paramName]: fileName || uploadDir
-        }
+            [paramName]: fileName || uploadDir,
+        },
     });
 }
 
 export async function createDir({
     daemonId,
     uuid,
-    target
+    target,
 }: {
     daemonId: string;
     uuid: string;
     target: string;
 }): Promise<APIResp<boolean>> {
-    return request('post', `/api/files/mkdir`, {
+    return request("post", `/api/files/mkdir`, {
         params: {
             daemonId,
-            uuid
+            uuid,
         },
         headers: {
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
         },
         data: {
-            target
-        }
+            target,
+        },
     });
 }
 
 export async function createFile({
     daemonId,
     uuid,
-    target
+    target,
 }: {
     daemonId: string;
     uuid: string;
     target: string;
 }): Promise<APIResp<boolean>> {
-    return request('post', `/api/files/touch`, {
+    return request("post", `/api/files/touch`, {
         params: {
             daemonId,
-            uuid
+            uuid,
         },
         headers: {
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
         },
         data: {
-            target
-        }
+            target,
+        },
     });
 }
 
 export async function deleteFiles({
     daemonId,
     uuid,
-    targets
+    targets,
 }: {
     daemonId: string;
     uuid: string;
     targets: string[];
 }): Promise<APIResp<boolean>> {
-    return request('delete', `/api/files`, {
+    return request("delete", `/api/files`, {
         params: {
             daemonId,
-            uuid
+            uuid,
         },
         headers: {
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
         },
         data: {
-            targets
-        }
+            targets,
+        },
     });
 }
 
@@ -199,50 +199,50 @@ export async function updateFileContent({
     daemonId,
     uuid,
     target,
-    text
+    text,
 }: {
     daemonId: string;
     uuid: string;
     target: string;
     text: string;
 }): Promise<APIResp<boolean>> {
-    return request('put', `/api/files`, {
+    return request("put", `/api/files`, {
         params: {
             daemonId,
-            uuid
+            uuid,
         },
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            "x-requested-with": "XMLHttpRequest"
+            "x-requested-with": "XMLHttpRequest",
         },
         data: {
             target,
-            text
-        }
+            text,
+        },
     });
 }
 
 export async function getFileContent({
     daemonId,
     uuid,
-    target
+    target,
 }: {
     daemonId: string;
     uuid: string;
     target: string;
 }): Promise<APIResp<string | boolean>> {
-    return request('put', `/api/files`, {
+    return request("put", `/api/files`, {
         params: {
             daemonId,
-            uuid
+            uuid,
         },
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            "x-requested-with": "XMLHttpRequest"
+            "x-requested-with": "XMLHttpRequest",
         },
         data: {
-            target
-        }
+            target,
+        },
     });
 }
 
@@ -253,19 +253,19 @@ export async function getFileList({
     // [最高100](https://github.com/MCSManager/MCSManager/blob/master/daemon/src/service/system_file.ts#L85)
     pageSize = 100,
     target,
-    fileName = ""
+    fileName = "",
 }: MCSFileListReq): Promise<APIResp<MCSFileListPageResp>> {
-    return request('get', `/api/files/list`, {
+    return request("get", `/api/files/list`, {
         params: {
             daemonId,
             uuid,
             page,
             page_size: pageSize,
             target,
-            file_name: fileName
+            file_name: fileName,
         },
         headers: {
-            "x-requested-with": "XMLHttpRequest"
-        }
+            "x-requested-with": "XMLHttpRequest",
+        },
     });
 }
